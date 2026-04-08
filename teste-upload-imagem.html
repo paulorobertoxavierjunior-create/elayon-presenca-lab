@@ -1,57 +1,43 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Teste 9 — Upload de imagem</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-
-<main class="page-shell">
-
-  <section class="panel-box">
+<main>
+  <section class="card">
     <h2>Teste 9 — Upload de imagem + contexto + log</h2>
     <p>Valida entrada visual do mundo real com rastreabilidade completa.</p>
 
-    <label>Selecionar imagem</label>
-    <input type="file" id="inputImagem" accept="image/*" capture="environment">
+    <div class="row">
+      <input type="file" id="inputImagem" accept="image/*" />
+      <input type="text" id="inputContexto" placeholder="Ex: estou em reunião" />
+    </div>
 
-    <label>Contexto</label>
-    <input type="text" id="inputContexto" placeholder="Ex: estou em reunião">
+    <div class="row">
+      <button class="btn" id="btnProcessar">Processar</button>
+      <button class="btn-outline" id="btnResetar">Resetar</button>
+    </div>
 
-    <div class="cta-row">
-      <button class="btn-primary" id="btnProcessar">Processar</button>
-      <button class="btn-secondary" id="btnResetar">Resetar</button>
-      <button class="btn-secondary" id="btnLimparLog">Limpar log</button>
-      <a class="btn-secondary" href="index.html">Voltar</a>
+    <div class="row">
+      <button class="btn-outline" id="btnLimparLog">Limpar log</button>
+      <button class="btn-outline" onclick="window.location.href='index.html'">Voltar</button>
     </div>
   </section>
 
-  <section class="panel-box">
+  <section class="card">
     <h3>Preview</h3>
-    <img id="previewImagem" style="max-width:100%; border-radius:12px;">
+    <img id="previewImagem" class="preview-img" />
   </section>
 
-  <section class="panel-box">
-    <h3>Payload enviado</h3>
+  <section class="card">
+    <h3>Payload</h3>
     <pre id="payloadBox">—</pre>
   </section>
 
-  <section class="panel-box">
-    <h3>Status geral</h3>
-    <p id="status">aguardando</p>
+  <section class="card">
+    <h3>Status</h3>
+    <div id="status">aguardando</div>
   </section>
 
-  <section class="panel-box">
+  <section class="card">
     <h3>Log técnico</h3>
     <pre id="log"></pre>
   </section>
-
 </main>
 
-<script src="js/base.js"></script>
 <script src="js/teste-upload-imagem.js"></script>
-
-</body>
-</html>
