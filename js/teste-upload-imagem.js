@@ -1,3 +1,5 @@
+console.log("JS CARREGADO 🔥");
+
 let logBox = document.getElementById("log");
 let statusBox = document.getElementById("status");
 let payloadBox = document.getElementById("payloadBox");
