@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 9.5 • Decisão → ação</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 9.5 — Decisão → ação</h1>
+      <p>Objetivo: transformar contexto + intenção + estado em ação executável.</p>
+
+      <div class="row">
+        <button class="btn" id="btnProcessar">Gerar decisão</button>
+        <button class="btn" id="btnExecutarAcao">Executar ação</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Ambiente observado</span>
+          <input id="inputAmbiente" type="text" placeholder="Ex: televisão desligada, quarto escuro">
+        </div>
+
+        <div class="field">
+          <span class="label">Estado declarado</span>
+          <input id="inputEstado" type="text" placeholder="Ex: estou conseguindo focar, estou cansado">
+        </div>
+
+        <div class="field">
+          <span class="label">Intenção</span>
+          <input id="inputIntencao" type="text" placeholder="Ex: ligar a TV, tentar dormir">
+        </div>
+
+        <div class="field">
+          <span class="label">Silêncio (%)</span>
+          <input id="inputSilencio" type="number" value="20">
+        </div>
+
+        <div class="field">
+          <span class="label">Pausas</span>
+          <input id="inputPausas" type="number" value="3">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload</span>
+          <div class="value" id="payloadUI">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Ação calculada</span>
+          <div class="value" id="acaoCalculada">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Leitura</h2>
+
+      <div class="field">
+        <span class="label">Resumo</span>
+        <div class="value" id="outResumo">—</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Interpretação</span>
+        <div class="value" id="outInterpretacao">—</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Próxima ação</span>
+        <div class="value" id="outAcao">—</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-decisao-acao.js"></script>
+</body>
+</html>
