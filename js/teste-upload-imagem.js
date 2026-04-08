@@ -1,163 +1,144 @@
-// 🔥 GARANTIR QUE TUDO CARREGOU
-window.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("JS Teste 9 carregado 🔥");
+  alert("JS CARREGADO 🔥"); // 👈 se não aparecer, o problema é o caminho
 
-  // 🔹 ELEMENTOS
   const logBox = document.getElementById("logBox");
-  const statusGeral = document.getElementById("statusGeral");
-  const emissorAtual = document.getElementById("emissorAtual");
-  const canalAtual = document.getElementById("canalAtual");
-  const receptorAtual = document.getElementById("receptorAtual");
-  const payloadAtual = document.getElementById("payloadAtual");
-  const respostaAtual = document.getElementById("respostaAtual");
-  const ultimoEvento = document.getElementById("ultimoEvento");
-  const ultimoErro = document.getElementById("ultimoErro");
+  const status = document.getElementById("statusGeral");
+  const emissor = document.getElementById("emissorAtual");
+  const canal = document.getElementById("canalAtual");
+  const receptor = document.getElementById("receptorAtual");
+  const payloadView = document.getElementById("payloadAtual");
+  const respostaView = document.getElementById("respostaAtual");
+  const evento = document.getElementById("ultimoEvento");
+  const erro = document.getElementById("ultimoErro");
 
-  const previewImagem = document.getElementById("previewImagem");
+  const preview = document.getElementById("previewImagem");
 
-  const inputImagem = document.getElementById("inputImagem");
-  const inputContexto = document.getElementById("inputContexto");
+  const inputImg = document.getElementById("inputImagem");
+  const inputCtx = document.getElementById("inputContexto");
 
   const btnProcessar = document.getElementById("btnProcessar");
   const btnResetar = document.getElementById("btnResetar");
-  const btnLimparLog = document.getElementById("btnLimparLog");
+  const btnLimpar = document.getElementById("btnLimparLog");
 
-  let imagemBase64 = null;
+  let base64 = null;
 
-  // 🔹 LOG PADRÃO
   function log(msg) {
     const ts = new Date().toLocaleTimeString();
     logBox.textContent += `[${ts}] ${msg}\n`;
     logBox.scrollTop = logBox.scrollHeight;
   }
 
-  // 🔹 RESET
-  function resetar() {
-    inputImagem.value = "";
-    inputContexto.value = "";
+  function reset() {
+    base64 = null;
+    inputImg.value = "";
+    inputCtx.value = "";
+    preview.src = "";
 
-    previewImagem.src = "";
+    status.textContent = "aguardando";
+    emissor.textContent = "não acionado";
+    canal.textContent = "não definido";
+    receptor.textContent = "não definido";
+    payloadView.textContent = "—";
+    respostaView.textContent = "—";
+    evento.textContent = "nenhum";
+    erro.textContent = "nenhum";
 
-    statusGeral.textContent = "aguardando";
-    emissorAtual.textContent = "não acionado";
-    canalAtual.textContent = "não definido";
-    receptorAtual.textContent = "não definido";
-    payloadAtual.textContent = "—";
-    respostaAtual.textContent = "—";
-    ultimoEvento.textContent = "nenhum";
-    ultimoErro.textContent = "nenhum";
-
-    imagemBase64 = null;
-
-    log("Diagnóstico resetado");
+    log("reset executado");
   }
 
-  // 🔹 LIMPAR LOG
-  function limparLog() {
+  function limpar() {
     logBox.textContent = "";
   }
 
-  // 🔹 CONVERTER IMAGEM → BASE64
-  function lerImagem(file) {
-    return new Promise((resolve, reject) => {
+  function toBase64(file) {
+    return new Promise((res, rej) => {
       const reader = new FileReader();
-
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-
+      reader.onload = () => res(reader.result);
+      reader.onerror = rej;
       reader.readAsDataURL(file);
     });
   }
 
-  // 🔹 EVENTO: SELEÇÃO DE IMAGEM
-  inputImagem.addEventListener("change", async () => {
-    const file = inputImagem.files[0];
+  // 📸 Seleção de imagem
+  inputImg.addEventListener("change", async () => {
 
-    if (!file) {
-      log("Nenhuma imagem selecionada");
-      return;
-    }
+    const file = inputImg.files[0];
+    if (!file) return;
 
-    emissorAtual.textContent = "inputImagem";
-    canalAtual.textContent = "DOM → FileReader";
-    receptorAtual.textContent = "previewImagem";
+    emissor.textContent = "inputImagem";
+    canal.textContent = "FileReader";
+    receptor.textContent = "previewImagem";
 
-    log(`Imagem selecionada: ${file.name}`);
+    log("imagem selecionada");
 
-    try {
-      imagemBase64 = await lerImagem(file);
+    base64 = await toBase64(file);
 
-      previewImagem.src = imagemBase64;
+    preview.src = base64;
 
-      ultimoEvento.textContent = "imagem carregada e preview exibido";
+    evento.textContent = "preview exibido";
 
-      log("Imagem convertida para base64");
-      log("Preview renderizado");
-
-    } catch (err) {
-      ultimoErro.textContent = "erro ao ler imagem";
-      log("ERRO ao converter imagem");
-      console.error(err);
-    }
+    log("imagem convertida base64");
   });
 
-  // 🔹 PROCESSAR
-  btnProcessar.addEventListener("click", () => {
+  // 🚀 PROCESSAR (AGORA COM ENVIO REAL)
+  btnProcessar.addEventListener("click", async () => {
 
-    emissorAtual.textContent = "botão #btnProcessar";
-    canalAtual.textContent = "DOM → JavaScript";
-    receptorAtual.textContent = "painel de diagnóstico";
+    alert("BOTÃO FUNCIONOU 🔥"); // 👈 debug
 
-    log("Emissor acionado: botão #btnProcessar");
+    emissor.textContent = "btnProcessar";
+    canal.textContent = "fetch → Render";
+    receptor.textContent = "backend";
 
-    if (!imagemBase64) {
-      statusGeral.textContent = "erro";
-      ultimoErro.textContent = "nenhuma imagem carregada";
-
-      log("ERRO: nenhuma imagem carregada");
-
+    if (!base64) {
+      erro.textContent = "sem imagem";
+      log("ERRO: sem imagem");
       return;
     }
 
-    const contexto = inputContexto.value || "";
-
     const payload = {
-      tipo: "imagem_input",
-      contexto: contexto,
-      imagem_base64: "[omitido para log]",
+      context: inputCtx.value || "sem contexto",
+      image_base64: base64.substring(0, 200), // reduzido pra não travar UI
       timestamp: new Date().toISOString()
     };
 
-    payloadAtual.textContent = JSON.stringify(payload, null, 2);
+    payloadView.textContent = JSON.stringify(payload, null, 2);
 
-    log("Payload montado com sucesso");
+    log("enviando pro backend...");
 
-    // 🔹 SIMULAÇÃO DE PROCESSAMENTO
-    setTimeout(() => {
+    const t0 = performance.now();
 
-      const resposta = {
-        ok: true,
-        mensagem: "Imagem recebida e processada localmente",
-        contexto: contexto
-      };
+    try {
 
-      respostaAtual.textContent = JSON.stringify(resposta, null, 2);
+      const res = await fetch("https://nucleo-crs-elayon.onrender.com/health");
 
-      statusGeral.textContent = "processado local";
-      ultimoEvento.textContent = "resposta renderizada";
+      const data = await res.json();
 
-      log("Resposta simulada gerada");
-      log("Teste 9 concluído com sucesso");
+      const t1 = performance.now();
 
-    }, 400);
+      respostaView.textContent = JSON.stringify(data, null, 2);
+
+      status.textContent = `ok (${Math.round(t1 - t0)}ms)`;
+      evento.textContent = "resposta recebida";
+
+      log("resposta recebida do render");
+      log(JSON.stringify(data));
+
+    } catch (e) {
+
+      erro.textContent = "falha fetch";
+      status.textContent = "erro";
+
+      log("ERRO FETCH");
+      console.error(e);
+
+    }
+
   });
 
-  // 🔹 BOTÕES
-  btnResetar.addEventListener("click", resetar);
-  btnLimparLog.addEventListener("click", limparLog);
+  btnResetar.addEventListener("click", reset);
+  btnLimpar.addEventListener("click", limpar);
 
-  // 🔹 INIT
-  log("Página carregada. Sistema pronto para teste de imagem.");
+  log("sistema pronto");
 
 });
