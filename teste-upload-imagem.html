@@ -1,43 +1,110 @@
-<main>
-  <section class="card">
-    <h2>Teste 9 — Upload de imagem + contexto + log</h2>
-    <p>Valida entrada visual do mundo real com rastreabilidade completa.</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 9 • Upload de imagem</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
 
-    <div class="row">
-      <input type="file" id="inputImagem" accept="image/*" />
-      <input type="text" id="inputContexto" placeholder="Ex: estou em reunião" />
-    </div>
+    <!-- 🔹 CABEÇALHO -->
+    <section class="card">
+      <h1>Teste 9 — Upload de imagem + contexto + log</h1>
+      <p>
+        Objetivo: validar entrada visual do mundo real, montagem de payload e rastreabilidade completa.
+      </p>
 
-    <div class="row">
-      <button class="btn" id="btnProcessar">Processar</button>
-      <button class="btn-outline" id="btnResetar">Resetar</button>
-    </div>
+      <div class="row">
+        <button class="btn" id="btnProcessar">Processar</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
 
-    <div class="row">
-      <button class="btn-outline" id="btnLimparLog">Limpar log</button>
-      <button class="btn-outline" onclick="window.location.href='index.html'">Voltar</button>
-    </div>
-  </section>
+    <!-- 🔹 INPUT -->
+    <section class="card">
+      <div class="grid">
 
-  <section class="card">
-    <h3>Preview</h3>
-    <img id="previewImagem" class="preview-img" />
-  </section>
+        <div class="field">
+          <span class="label">Selecionar imagem</span>
+          <input id="inputImagem" type="file" accept="image/*"
+            style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
 
-  <section class="card">
-    <h3>Payload</h3>
-    <pre id="payloadBox">—</pre>
-  </section>
+        <div class="field">
+          <span class="label">Contexto</span>
+          <input id="inputContexto" type="text" placeholder="Ex: estou em reunião"
+            style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
 
-  <section class="card">
-    <h3>Status</h3>
-    <div id="status">aguardando</div>
-  </section>
+      </div>
+    </section>
 
-  <section class="card">
-    <h3>Log técnico</h3>
-    <pre id="log"></pre>
-  </section>
-</main>
+    <!-- 🔹 STATUS -->
+    <section class="card">
+      <div class="grid">
 
-<script src="js/teste-upload-imagem.js"></script>
+        <div class="field">
+          <span class="label">Status geral</span>
+          <div class="value" id="statusGeral">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Emissor</span>
+          <div class="value" id="emissorAtual">não acionado</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Canal</span>
+          <div class="value" id="canalAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Receptor</span>
+          <div class="value" id="receptorAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload enviado</span>
+          <div class="value" id="payloadAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Resposta recebida</span>
+          <div class="value" id="respostaAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último evento</span>
+          <div class="value" id="ultimoEvento">nenhum</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último erro</span>
+          <div class="value" id="ultimoErro">nenhum</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 🔹 PREVIEW -->
+    <section class="card">
+      <h2>Preview da imagem</h2>
+      <img id="previewImagem" style="width:100%;border-radius:12px;">
+    </section>
+
+    <!-- 🔹 LOG -->
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-upload-imagem.js"></script>
+</body>
+</html>
