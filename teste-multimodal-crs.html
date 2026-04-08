@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 9.4 • Multimodal + CRS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 9.4 — Multimodal + CRS</h1>
+      <p>Imagem + texto + ritmo → decisão ampliada.</p>
+
+      <div class="row">
+        <button class="btn" id="btnProcessar">Processar</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Imagem</span>
+          <input id="inputImagem" type="file" accept="image/*">
+        </div>
+
+        <div class="field">
+          <span class="label">Contexto</span>
+          <input id="inputContexto" type="text">
+        </div>
+
+        <div class="field">
+          <span class="label">Mensagem</span>
+          <input id="inputTexto" type="text">
+        </div>
+
+        <div class="field">
+          <span class="label">Duração (s)</span>
+          <input id="inputDuracao" type="number" value="5">
+        </div>
+
+        <div class="field">
+          <span class="label">Silêncio (%)</span>
+          <input id="inputSilencio" type="number" value="20">
+        </div>
+
+        <div class="field">
+          <span class="label">Pausas</span>
+          <input id="inputPausas" type="number" value="3">
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload</span>
+          <div class="value" id="payloadUI">—</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Decisão integrada</h2>
+
+      <div class="field">
+        <span class="label">Resumo</span>
+        <div class="value" id="outResumo">—</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Leitura combinada</span>
+        <div class="value" id="outInterpretacao">—</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Ação sugerida</span>
+        <div class="value" id="outAcao">—</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-multimodal-crs.js"></script>
+</body>
+</html>
