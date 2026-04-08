@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 6 • CRS real</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>Teste 6 — CRS real + payload variável</h1>
+      <p>
+        Objetivo: validar envio real ao endpoint do CRS, resposta JSON,
+        latência da ida e volta e leitura do retorno.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnEnviarCRS">Enviar para o CRS</button>
+        <button class="btn secondary" id="btnResetarTeste">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Contexto</span>
+          <input id="inpContext" type="text" value="teste laboratorial do CRS" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+
+        <div class="field">
+          <span class="label">Transcrição bruta</span>
+          <textarea id="inpTranscript" style="width:100%;min-height:100px;padding:10px;border:1px solid #d8eaee;border-radius:12px;">fala de teste enviada pelo laboratório</textarea>
+        </div>
+
+        <div class="field">
+          <span class="label">Duração (s)</span>
+          <input id="inpDuration" type="number" value="4" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+
+        <div class="field">
+          <span class="label">Silêncio (%)</span>
+          <input id="inpSilence" type="number" value="18" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+
+        <div class="field">
+          <span class="label">Pausas</span>
+          <input id="inpPauseCount" type="number" value="2" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+
+        <div class="field">
+          <span class="label">Média de pausa (ms)</span>
+          <input id="inpPauseMean" type="number" value="180" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status geral</span>
+          <div class="value" id="statusGeral">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Emissor</span>
+          <div class="value" id="emissorAtual">não acionado</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Canal</span>
+          <div class="value" id="canalAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Receptor</span>
+          <div class="value" id="receptorAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload enviado</span>
+          <div class="value" id="payloadAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Resposta recebida</span>
+          <div class="value" id="respostaAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último evento</span>
+          <div class="value" id="ultimoEvento">nenhum</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último erro</span>
+          <div class="value" id="ultimoErro">nenhum</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-crs.js"></script>
+</body>
+</html>
