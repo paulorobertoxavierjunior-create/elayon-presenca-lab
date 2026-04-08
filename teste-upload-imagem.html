@@ -8,50 +8,50 @@
 </head>
 <body>
 
-  <main class="page-shell">
+<main class="page-shell">
 
+  <section class="panel-box">
     <h2>Teste 9 — Upload de imagem + contexto + log</h2>
+    <p>Valida entrada visual do mundo real com rastreabilidade completa.</p>
 
-    <div class="panel-box">
+    <label>Selecionar imagem</label>
+    <input type="file" id="inputImagem" accept="image/*" capture="environment">
 
-      <label>Selecionar imagem</label>
-      <input type="file" id="inputImagem" accept="image/*" capture="environment">
+    <label>Contexto</label>
+    <input type="text" id="inputContexto" placeholder="Ex: estou em reunião">
 
-      <label>Contexto</label>
-      <input type="text" id="inputContexto" placeholder="Ex: estou em reunião">
-
-      <div class="cta-row">
-        <button class="btn-primary" id="btnProcessar">Processar</button>
-        <button class="btn-secondary" id="btnResetar">Resetar</button>
-        <button class="btn-secondary" id="btnLimparLog">Limpar log</button>
-      </div>
-
+    <div class="cta-row">
+      <button class="btn-primary" id="btnProcessar">Processar</button>
+      <button class="btn-secondary" id="btnResetar">Resetar</button>
+      <button class="btn-secondary" id="btnLimparLog">Limpar log</button>
+      <a class="btn-secondary" href="index.html">Voltar</a>
     </div>
+  </section>
 
-    <div class="panel-box">
-      <h3>Preview</h3>
-      <img id="previewImagem" style="max-width:100%; border-radius:12px;">
-    </div>
+  <section class="panel-box">
+    <h3>Preview</h3>
+    <img id="previewImagem" style="max-width:100%; border-radius:12px;">
+  </section>
 
-    <div class="panel-box">
-      <h3>Payload</h3>
-      <pre id="payloadBox"></pre>
-    </div>
+  <section class="panel-box">
+    <h3>Payload enviado</h3>
+    <pre id="payloadBox">—</pre>
+  </section>
 
-    <div class="panel-box">
-      <h3>Status</h3>
-      <p id="status">aguardando</p>
-    </div>
+  <section class="panel-box">
+    <h3>Status geral</h3>
+    <p id="status">aguardando</p>
+  </section>
 
-    <div class="panel-box">
-      <h3>Log técnico</h3>
-      <pre id="log"></pre>
-    </div>
+  <section class="panel-box">
+    <h3>Log técnico</h3>
+    <pre id="log"></pre>
+  </section>
 
-  </main>
+</main>
 
-  <script src="js/base.js"></script>
-  <script src="js/teste-upload-imagem.js"></script>
+<script src="js/base.js"></script>
+<script src="js/teste-upload-imagem.js"></script>
 
 </body>
 </html>
