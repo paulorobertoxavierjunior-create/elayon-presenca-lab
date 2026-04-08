@@ -1,122 +1,163 @@
-console.log("JS CARREGADO 🔥");
+// 🔥 GARANTIR QUE TUDO CARREGOU
+window.addEventListener("DOMContentLoaded", () => {
 
-let logBox = document.getElementById("log");
-let statusBox = document.getElementById("status");
-let payloadBox = document.getElementById("payloadBox");
-let previewImagem = document.getElementById("previewImagem");
+  console.log("JS Teste 9 carregado 🔥");
 
-let inputImagem = document.getElementById("inputImagem");
-let inputContexto = document.getElementById("inputContexto");
+  // 🔹 ELEMENTOS
+  const logBox = document.getElementById("logBox");
+  const statusGeral = document.getElementById("statusGeral");
+  const emissorAtual = document.getElementById("emissorAtual");
+  const canalAtual = document.getElementById("canalAtual");
+  const receptorAtual = document.getElementById("receptorAtual");
+  const payloadAtual = document.getElementById("payloadAtual");
+  const respostaAtual = document.getElementById("respostaAtual");
+  const ultimoEvento = document.getElementById("ultimoEvento");
+  const ultimoErro = document.getElementById("ultimoErro");
 
-let btnProcessar = document.getElementById("btnProcessar");
-let btnResetar = document.getElementById("btnResetar");
-let btnLimparLog = document.getElementById("btnLimparLog");
+  const previewImagem = document.getElementById("previewImagem");
 
-let imagemBase64 = null;
+  const inputImagem = document.getElementById("inputImagem");
+  const inputContexto = document.getElementById("inputContexto");
 
-// 🔹 LOG PADRÃO
-function log(msg) {
-  const ts = new Date().toLocaleTimeString();
-  logBox.textContent += `[${ts}] ${msg}\n`;
-  logBox.scrollTop = logBox.scrollHeight;
-}
+  const btnProcessar = document.getElementById("btnProcessar");
+  const btnResetar = document.getElementById("btnResetar");
+  const btnLimparLog = document.getElementById("btnLimparLog");
 
-// 🔹 RESET
-function resetar() {
-  inputImagem.value = "";
-  inputContexto.value = "";
-  previewImagem.src = "";
-  payloadBox.textContent = "—";
-  statusBox.textContent = "aguardando";
-  imagemBase64 = null;
+  let imagemBase64 = null;
 
-  log("Diagnóstico resetado");
-}
+  // 🔹 LOG PADRÃO
+  function log(msg) {
+    const ts = new Date().toLocaleTimeString();
+    logBox.textContent += `[${ts}] ${msg}\n`;
+    logBox.scrollTop = logBox.scrollHeight;
+  }
 
-// 🔹 LIMPAR LOG
-function limparLog() {
-  logBox.textContent = "";
-}
+  // 🔹 RESET
+  function resetar() {
+    inputImagem.value = "";
+    inputContexto.value = "";
 
-// 🔹 CONVERTER IMAGEM → BASE64
-function lerImagem(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    previewImagem.src = "";
 
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
+    statusGeral.textContent = "aguardando";
+    emissorAtual.textContent = "não acionado";
+    canalAtual.textContent = "não definido";
+    receptorAtual.textContent = "não definido";
+    payloadAtual.textContent = "—";
+    respostaAtual.textContent = "—";
+    ultimoEvento.textContent = "nenhum";
+    ultimoErro.textContent = "nenhum";
 
-    reader.readAsDataURL(file);
+    imagemBase64 = null;
+
+    log("Diagnóstico resetado");
+  }
+
+  // 🔹 LIMPAR LOG
+  function limparLog() {
+    logBox.textContent = "";
+  }
+
+  // 🔹 CONVERTER IMAGEM → BASE64
+  function lerImagem(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 🔹 EVENTO: SELEÇÃO DE IMAGEM
+  inputImagem.addEventListener("change", async () => {
+    const file = inputImagem.files[0];
+
+    if (!file) {
+      log("Nenhuma imagem selecionada");
+      return;
+    }
+
+    emissorAtual.textContent = "inputImagem";
+    canalAtual.textContent = "DOM → FileReader";
+    receptorAtual.textContent = "previewImagem";
+
+    log(`Imagem selecionada: ${file.name}`);
+
+    try {
+      imagemBase64 = await lerImagem(file);
+
+      previewImagem.src = imagemBase64;
+
+      ultimoEvento.textContent = "imagem carregada e preview exibido";
+
+      log("Imagem convertida para base64");
+      log("Preview renderizado");
+
+    } catch (err) {
+      ultimoErro.textContent = "erro ao ler imagem";
+      log("ERRO ao converter imagem");
+      console.error(err);
+    }
   });
-}
 
-// 🔹 EVENTO: SELEÇÃO DE IMAGEM
-inputImagem.addEventListener("change", async () => {
-  const file = inputImagem.files[0];
+  // 🔹 PROCESSAR
+  btnProcessar.addEventListener("click", () => {
 
-  if (!file) {
-    log("Nenhuma imagem selecionada");
-    return;
-  }
+    emissorAtual.textContent = "botão #btnProcessar";
+    canalAtual.textContent = "DOM → JavaScript";
+    receptorAtual.textContent = "painel de diagnóstico";
 
-  log(`Imagem selecionada: ${file.name}`);
+    log("Emissor acionado: botão #btnProcessar");
 
-  try {
-    imagemBase64 = await lerImagem(file);
+    if (!imagemBase64) {
+      statusGeral.textContent = "erro";
+      ultimoErro.textContent = "nenhuma imagem carregada";
 
-    previewImagem.src = imagemBase64;
+      log("ERRO: nenhuma imagem carregada");
 
-    log("Imagem convertida para base64");
-    log("Preview renderizado");
+      return;
+    }
 
-  } catch (err) {
-    log("ERRO ao ler imagem");
-    console.error(err);
-  }
+    const contexto = inputContexto.value || "";
+
+    const payload = {
+      tipo: "imagem_input",
+      contexto: contexto,
+      imagem_base64: "[omitido para log]",
+      timestamp: new Date().toISOString()
+    };
+
+    payloadAtual.textContent = JSON.stringify(payload, null, 2);
+
+    log("Payload montado com sucesso");
+
+    // 🔹 SIMULAÇÃO DE PROCESSAMENTO
+    setTimeout(() => {
+
+      const resposta = {
+        ok: true,
+        mensagem: "Imagem recebida e processada localmente",
+        contexto: contexto
+      };
+
+      respostaAtual.textContent = JSON.stringify(resposta, null, 2);
+
+      statusGeral.textContent = "processado local";
+      ultimoEvento.textContent = "resposta renderizada";
+
+      log("Resposta simulada gerada");
+      log("Teste 9 concluído com sucesso");
+
+    }, 400);
+  });
+
+  // 🔹 BOTÕES
+  btnResetar.addEventListener("click", resetar);
+  btnLimparLog.addEventListener("click", limparLog);
+
+  // 🔹 INIT
+  log("Página carregada. Sistema pronto para teste de imagem.");
+
 });
-
-// 🔹 PROCESSAR
-btnProcessar.addEventListener("click", () => {
-
-  log("Emissor acionado: botão #btnProcessar");
-
-  if (!imagemBase64) {
-    log("ERRO: nenhuma imagem carregada");
-    statusBox.textContent = "erro";
-    return;
-  }
-
-  const contexto = inputContexto.value || "";
-
-  const payload = {
-    tipo: "imagem_input",
-    contexto: contexto,
-    imagem_preview: "[base64 reduzido]",
-    timestamp: new Date().toISOString()
-  };
-
-  log("Canal aberto: DOM → JavaScript");
-  log("Payload montado com sucesso");
-  log("Imagem anexada ao payload");
-
-  payloadBox.textContent = JSON.stringify(payload, null, 2);
-
-  // 🔹 SIMULAÇÃO DE PROCESSAMENTO (por enquanto local)
-  setTimeout(() => {
-    statusBox.textContent = "processado local";
-
-    log("Receptor: processamento local simulado");
-    log("Resposta gerada com sucesso");
-    log("Teste 9 concluído");
-
-  }, 400);
-});
-
-// 🔹 RESET
-btnResetar.addEventListener("click", resetar);
-
-// 🔹 LIMPAR LOG
-btnLimparLog.addEventListener("click", limparLog);
-
-// 🔹 INIT
-log("Página carregada. Sistema pronto para teste de imagem.");
