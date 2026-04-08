@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 10.1 • Linha temporal viva</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 10.1 — Linha temporal viva do estado</h1>
+      <p>
+        Objetivo: visualizar a evolução temporal do operador em ciclos curtos e criar a base
+        gráfica do Presença.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnRegistrarPonto">Registrar ponto</button>
+        <button class="btn" id="btnAutoSimular">Auto simular</button>
+        <button class="btn secondary" id="btnPararSimulacao">Parar</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Silêncio (%)</span>
+          <input id="inputSilencio" type="number" value="20">
+        </div>
+
+        <div class="field">
+          <span class="label">Pausas</span>
+          <input id="inputPausas" type="number" value="3">
+        </div>
+
+        <div class="field">
+          <span class="label">Intensidade / energia (%)</span>
+          <input id="inputEnergia" type="number" value="60">
+        </div>
+
+        <div class="field">
+          <span class="label">Continuidade (%)</span>
+          <input id="inputContinuidade" type="number" value="70">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último ponto</span>
+          <div class="value" id="ultimoPonto">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Leitura atual</span>
+          <div class="value" id="leituraAtual">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Visualização temporal</h2>
+      <canvas id="timelineCanvas" style="width:100%;height:320px;border-radius:12px;background:#f7fbfc;"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Série registrada</h2>
+      <div class="value" id="serieUI">[]</div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-linha-temporal.js"></script>
+</body>
+</html>
