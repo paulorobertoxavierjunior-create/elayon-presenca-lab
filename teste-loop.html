@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 7 • Loop mínimo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>Teste 7 — Loop mínimo (fala → CRS → voz)</h1>
+      <p>
+        Objetivo: validar o ciclo mínimo da ferramenta:
+        captar fala, transcrever, enviar ao CRS, receber leitura e falar a resposta.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnIniciarLoop">Iniciar loop</button>
+        <button class="btn secondary" id="btnPararLoop">Parar escuta</button>
+        <button class="btn secondary" id="btnLerResposta">Ler resposta</button>
+        <button class="btn secondary" id="btnResetarTeste">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Contexto</span>
+          <input id="inpContext" type="text" value="teste de loop do laboratório" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+
+        <div class="field">
+          <span class="label">Objetivo</span>
+          <input id="inpGoal" type="text" value="verificar ciclo completo" style="width:100%;padding:10px;border:1px solid #d8eaee;border-radius:12px;">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status geral</span>
+          <div class="value" id="statusGeral">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Emissor</span>
+          <div class="value" id="emissorAtual">não acionado</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Canal</span>
+          <div class="value" id="canalAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Receptor</span>
+          <div class="value" id="receptorAtual">não definido</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload enviado</span>
+          <div class="value" id="payloadAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Resposta recebida</span>
+          <div class="value" id="respostaAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último evento</span>
+          <div class="value" id="ultimoEvento">nenhum</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último erro</span>
+          <div class="value" id="ultimoErro">nenhum</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Transcrição reconhecida</h2>
+      <div class="field">
+        <span class="label">Texto</span>
+        <div class="value" id="textoTranscrito">—</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Resumo do CRS</h2>
+      <div class="field">
+        <span class="label">Summary</span>
+        <div class="value" id="textoResposta">—</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-loop.js"></script>
+</body>
+</html>
