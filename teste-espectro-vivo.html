@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 10.2 • Espectro vivo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 10.2 — Espectro vivo de intensidade</h1>
+      <p>
+        Objetivo: simular captação humana fidedigna em bandas de intensidade e criar base visual
+        para acompanhamento operacional em tempo real.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnGerarQuadro">Gerar quadro</button>
+        <button class="btn" id="btnAutoSimular">Auto simular</button>
+        <button class="btn secondary" id="btnParar">Parar</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Silêncio base (%)</span>
+          <input id="inputSilencioBase" type="number" value="18">
+        </div>
+
+        <div class="field">
+          <span class="label">Energia base (%)</span>
+          <input id="inputEnergiaBase" type="number" value="68">
+        </div>
+
+        <div class="field">
+          <span class="label">Estabilidade (%)</span>
+          <input id="inputEstabilidadeBase" type="number" value="72">
+        </div>
+
+        <div class="field">
+          <span class="label">Variação humana (%)</span>
+          <input id="inputVariacaoBase" type="number" value="12">
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Leitura atual</span>
+          <div class="value" id="leituraAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último quadro</span>
+          <div class="value" id="ultimoQuadro">—</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Espectro vivo</h2>
+      <canvas id="spectrumCanvas" style="width:100%;height:320px;border-radius:12px;background:#06141b;"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Barras atuais</h2>
+      <div class="grid">
+        <div class="field">
+          <span class="label">Graves</span>
+          <div class="value" id="barGraves">—</div>
+        </div>
+        <div class="field">
+          <span class="label">Médios</span>
+          <div class="value" id="barMedios">—</div>
+        </div>
+        <div class="field">
+          <span class="label">Agudos</span>
+          <div class="value" id="barAgudos">—</div>
+        </div>
+        <div class="field">
+          <span class="label">Ruído residual</span>
+          <div class="value" id="barRuido">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Série espectral</h2>
+      <div class="value" id="serieUI">[]</div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-espectro-vivo.js"></script>
+</body>
+</html>
