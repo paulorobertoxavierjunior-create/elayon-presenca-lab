@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 9.6 • Memória curta da sessão</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 9.6 — Memória curta da sessão</h1>
+      <p>
+        Objetivo: validar continuidade humana entre interações, registrar contexto curto
+        e preparar dados para interpretação posterior por IA.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnRegistrar">Registrar interação</button>
+        <button class="btn secondary" id="btnComparar">Comparar memória</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Ambiente observado</span>
+          <input id="inputAmbiente" type="text" placeholder="Ex: bancada organizada, quarto silencioso">
+        </div>
+
+        <div class="field">
+          <span class="label">Estado declarado</span>
+          <input id="inputEstado" type="text" placeholder="Ex: estou cansado, estou focado">
+        </div>
+
+        <div class="field">
+          <span class="label">Intenção</span>
+          <input id="inputIntencao" type="text" placeholder="Ex: continuar, desacelerar, revisar">
+        </div>
+
+        <div class="field">
+          <span class="label">Silêncio (%)</span>
+          <input id="inputSilencio" type="number" value="20">
+        </div>
+
+        <div class="field">
+          <span class="label">Pausas</span>
+          <input id="inputPausas" type="number" value="3">
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Payload atual</span>
+          <div class="value" id="payloadAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Leitura de continuidade</span>
+          <div class="value" id="leituraContinuidade">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Próxima direção</span>
+          <div class="value" id="proximaDirecao">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Memória curta</h2>
+      <div class="value" id="memoriaCurta">[]</div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-memoria-curta.js"></script>
+</body>
+</html>
