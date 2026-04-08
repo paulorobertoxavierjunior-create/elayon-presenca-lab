@@ -1,82 +1,120 @@
-const inputImagem = document.getElementById("inputImagem");
-const inputContexto = document.getElementById("inputContexto");
-const preview = document.getElementById("previewImagem");
-const payloadBox = document.getElementById("payloadBox");
-const status = document.getElementById("status");
+let logBox = document.getElementById("log");
+let statusBox = document.getElementById("status");
+let payloadBox = document.getElementById("payloadBox");
+let previewImagem = document.getElementById("previewImagem");
 
-const btnProcessar = document.getElementById("btnProcessar");
-const btnResetar = document.getElementById("btnResetar");
-const btnLimparLog = document.getElementById("btnLimparLog");
+let inputImagem = document.getElementById("inputImagem");
+let inputContexto = document.getElementById("inputContexto");
+
+let btnProcessar = document.getElementById("btnProcessar");
+let btnResetar = document.getElementById("btnResetar");
+let btnLimparLog = document.getElementById("btnLimparLog");
 
 let imagemBase64 = null;
 
-function log(msg){
-  const el = document.getElementById("log");
-  const hora = new Date().toLocaleTimeString();
-  el.textContent += `[${hora}] ${msg}\n`;
+// 🔹 LOG PADRÃO
+function log(msg) {
+  const ts = new Date().toLocaleTimeString();
+  logBox.textContent += `[${ts}] ${msg}\n`;
+  logBox.scrollTop = logBox.scrollHeight;
 }
 
-inputImagem.addEventListener("change", () => {
+// 🔹 RESET
+function resetar() {
+  inputImagem.value = "";
+  inputContexto.value = "";
+  previewImagem.src = "";
+  payloadBox.textContent = "—";
+  statusBox.textContent = "aguardando";
+  imagemBase64 = null;
+
+  log("Diagnóstico resetado");
+}
+
+// 🔹 LIMPAR LOG
+function limparLog() {
+  logBox.textContent = "";
+}
+
+// 🔹 CONVERTER IMAGEM → BASE64
+function lerImagem(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// 🔹 EVENTO: SELEÇÃO DE IMAGEM
+inputImagem.addEventListener("change", async () => {
   const file = inputImagem.files[0];
-  if(!file){
+
+  if (!file) {
     log("Nenhuma imagem selecionada");
     return;
   }
 
-  log("Imagem selecionada");
+  log(`Imagem selecionada: ${file.name}`);
 
-  const reader = new FileReader();
+  try {
+    imagemBase64 = await lerImagem(file);
 
-  reader.onload = () => {
-    imagemBase64 = reader.result;
-
-    preview.src = imagemBase64;
+    previewImagem.src = imagemBase64;
 
     log("Imagem convertida para base64");
-  };
+    log("Preview renderizado");
 
-  reader.readAsDataURL(file);
+  } catch (err) {
+    log("ERRO ao ler imagem");
+    console.error(err);
+  }
 });
 
+// 🔹 PROCESSAR
 btnProcessar.addEventListener("click", () => {
 
-  log("Emissor acionado: botão processar");
+  log("Emissor acionado: botão #btnProcessar");
 
-  if(!imagemBase64){
+  if (!imagemBase64) {
     log("ERRO: nenhuma imagem carregada");
-    status.textContent = "erro";
+    statusBox.textContent = "erro";
     return;
   }
 
   const contexto = inputContexto.value || "";
 
   const payload = {
-    tipo: "imagem_contexto",
+    tipo: "imagem_input",
     contexto: contexto,
-    imagem_base64: imagemBase64.slice(0, 100) + "...",
-    ts: new Date().toISOString()
+    imagem_preview: "[base64 reduzido]",
+    timestamp: new Date().toISOString()
   };
+
+  log("Canal aberto: DOM → JavaScript");
+  log("Payload montado com sucesso");
+  log("Imagem anexada ao payload");
 
   payloadBox.textContent = JSON.stringify(payload, null, 2);
 
-  status.textContent = "processado";
+  // 🔹 SIMULAÇÃO DE PROCESSAMENTO (por enquanto local)
+  setTimeout(() => {
+    statusBox.textContent = "processado local";
 
-  log("Payload montado com sucesso");
-  log("Receptor: DOM local");
-  log("Teste 9 concluído");
+    log("Receptor: processamento local simulado");
+    log("Resposta gerada com sucesso");
+    log("Teste 9 concluído");
+
+  }, 400);
 });
 
-btnResetar.addEventListener("click", () => {
-  preview.src = "";
-  payloadBox.textContent = "";
-  status.textContent = "aguardando";
-  imagemBase64 = null;
-  inputImagem.value = "";
-  inputContexto.value = "";
+// 🔹 RESET
+btnResetar.addEventListener("click", resetar);
 
-  log("Diagnóstico resetado");
-});
+// 🔹 LIMPAR LOG
+btnLimparLog.addEventListener("click", limparLog);
 
-btnLimparLog.addEventListener("click", () => {
-  document.getElementById("log").textContent = "";
-});
+// 🔹 INIT
+log("Página carregada. Sistema pronto para teste de imagem.");
