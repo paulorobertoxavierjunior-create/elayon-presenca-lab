@@ -1,130 +1,199 @@
 (function () {
   const LAB = window.ELAYON_LAB;
 
-  async function checkAll() {
-    LAB.appendLog("Iniciando checklist completo");
+  const URL_RENDER_HEALTH = "https://nucleo-crs-elayon.onrender.com/health";
+  const URL_CRS_ANALISAR = "https://nucleo-crs-elayon.onrender.com/api/crs/analisar";
 
-    // FRONT
-    try {
-      LAB.setValue("chkFront", "OK");
-      LAB.appendLog("Front carregado");
-    } catch (e) {
-      LAB.setValue("chkFront", "ERRO");
-      LAB.setError(e);
+  function setConnectionValue(id, value) {
+    LAB.setValue(id, value);
+  }
+
+  function resetConnections() {
+    setConnectionValue("chkFront", "—");
+    setConnectionValue("chkJS", "—");
+    setConnectionValue("chkConfig", "—");
+    setConnectionValue("chkRender", "—");
+    setConnectionValue("chkCRS", "—");
+    setConnectionValue("chkMic", "—");
+    setConnectionValue("chkTTS", "—");
+    LAB.appendLog("Reset das conexões executado", "warn");
+  }
+
+  async function checkFront() {
+    setConnectionValue("chkFront", "OK");
+    LAB.appendLog("Front carregado com sucesso");
+  }
+
+  async function checkJS() {
+    if (!window.ELAYON_LAB) {
+      throw new Error("base.js não carregado");
+    }
+    setConnectionValue("chkJS", "OK");
+    LAB.appendLog("JS base carregado");
+  }
+
+  async function checkConfig() {
+    if (window.ELAYON_CONFIG) {
+      setConnectionValue("chkConfig", "OK");
+      LAB.appendLog("Config encontrado no window.ELAYON_CONFIG");
+      return;
     }
 
-    // JS BASE
-    try {
-      if (window.ELAYON_LAB) {
-        LAB.setValue("chkJS", "OK");
-        LAB.appendLog("JS base ativo");
-      } else {
-        throw new Error("base.js não carregado");
-      }
-    } catch (e) {
-      LAB.setValue("chkJS", "ERRO");
-      LAB.setError(e);
+    setConnectionValue("chkConfig", "AUSENTE");
+    LAB.appendLog("Config ausente neste laboratório", "warn");
+  }
+
+  async function checkMic() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      setConnectionValue("chkMic", "DISPONÍVEL");
+      LAB.appendLog("API de microfone disponível");
+      return;
     }
 
-    // CONFIG
-    try {
-      if (window.ELAYON_CONFIG) {
-        LAB.setValue("chkConfig", "OK");
-        LAB.appendLog("Config encontrado");
-      } else {
-        LAB.setValue("chkConfig", "AUSENTE");
-        LAB.appendLog("Config não definido", "warn");
-      }
-    } catch (e) {
-      LAB.setValue("chkConfig", "ERRO");
-      LAB.setError(e);
+    throw new Error("getUserMedia não disponível neste navegador");
+  }
+
+  async function checkTTS() {
+    if ("speechSynthesis" in window) {
+      setConnectionValue("chkTTS", "DISPONÍVEL");
+      LAB.appendLog("speechSynthesis disponível");
+      return;
     }
 
-    // MICROFONE
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        LAB.setValue("chkMic", "DISPONÍVEL");
-        LAB.appendLog("Microfone disponível");
-      } else {
-        throw new Error("getUserMedia indisponível");
-      }
-    } catch (e) {
-      LAB.setValue("chkMic", "ERRO");
-      LAB.setError(e);
+    throw new Error("speechSynthesis não disponível neste navegador");
+  }
+
+  async function checkRender() {
+    LAB.appendLog(`Testando Render em ${URL_RENDER_HEALTH}`);
+
+    const t0 = performance.now();
+    const response = await fetch(URL_RENDER_HEALTH, {
+      method: "GET"
+    });
+    const elapsed = Math.round(performance.now() - t0);
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`Render falhou com HTTP ${response.status}: ${text}`);
     }
 
-    // TTS
+    let json = null;
     try {
-      if ("speechSynthesis" in window) {
-        LAB.setValue("chkTTS", "DISPONÍVEL");
-        LAB.appendLog("TTS disponível");
-      } else {
-        throw new Error("TTS não suportado");
-      }
-    } catch (e) {
-      LAB.setValue("chkTTS", "ERRO");
-      LAB.setError(e);
+      json = JSON.parse(text);
+    } catch {
+      throw new Error("Render respondeu, mas não retornou JSON válido");
     }
 
-    // RENDER (ajusta URL depois)
-    try {
-      const t0 = Date.now();
+    setConnectionValue("chkRender", `OK (${elapsed}ms)`);
+    LAB.appendLog(`Render respondeu em ${elapsed}ms`);
+    LAB.appendLog(`Render payload: ${JSON.stringify(json)}`);
+  }
 
-      const res = await fetch("https://SEU-RENDER.onrender.com/health");
+  async function checkCRS() {
+    const payload = {
+      context: "teste de conexao",
+      transcript_raw: "fala de teste enviada pelo laboratorio",
+      duration_sec: 3,
+      silence_pct: 12,
+      pause_count: 1,
+      mean_pause_ms: 150,
+      source_text: "checagem laboratorial",
+      timeline_events: [],
+      uploaded_file_name: ""
+    };
 
-      const t1 = Date.now();
+    LAB.appendLog(`Testando CRS em ${URL_CRS_ANALISAR}`);
+    LAB.appendLog(`Payload CRS: ${JSON.stringify(payload)}`);
 
-      if (res.ok) {
-        LAB.setValue("chkRender", `OK (${t1 - t0}ms)`);
-        LAB.appendLog("Render respondeu OK");
-      } else {
-        throw new Error("Render respondeu erro");
-      }
+    const t0 = performance.now();
+    const response = await fetch(URL_CRS_ANALISAR, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    const elapsed = Math.round(performance.now() - t0);
 
-    } catch (e) {
-      LAB.setValue("chkRender", "FALHOU");
-      LAB.setError(e);
+    const text = await response.text();
+
+    if (!response.ok) {
+      throw new Error(`CRS falhou com HTTP ${response.status}: ${text}`);
     }
 
-    // CRS (ajusta URL depois)
+    let json = null;
     try {
-      const res = await fetch("https://SEU-CRS/api/ping");
+      json = JSON.parse(text);
+    } catch {
+      throw new Error("CRS respondeu, mas não retornou JSON válido");
+    }
 
-      if (res.ok) {
-        const json = await res.json();
-        LAB.setValue("chkCRS", "OK");
-        LAB.appendLog("CRS respondeu");
-        LAB.appendLog(JSON.stringify(json));
-      } else {
-        throw new Error("CRS erro");
-      }
+    setConnectionValue("chkCRS", `OK (${elapsed}ms)`);
+    LAB.appendLog(`CRS respondeu em ${elapsed}ms`);
+    LAB.appendLog(`CRS retorno: ${JSON.stringify(json)}`);
+  }
 
-    } catch (e) {
-      LAB.setValue("chkCRS", "FALHOU");
-      LAB.setError(e);
+  async function runChecklist() {
+    LAB.appendLog("Iniciando checklist geral");
+
+    try {
+      await checkFront();
+    } catch (error) {
+      setConnectionValue("chkFront", "ERRO");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkJS();
+    } catch (error) {
+      setConnectionValue("chkJS", "ERRO");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkConfig();
+    } catch (error) {
+      setConnectionValue("chkConfig", "ERRO");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkMic();
+    } catch (error) {
+      setConnectionValue("chkMic", "ERRO");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkTTS();
+    } catch (error) {
+      setConnectionValue("chkTTS", "ERRO");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkRender();
+    } catch (error) {
+      setConnectionValue("chkRender", "FALHOU");
+      LAB.setError(error);
+    }
+
+    try {
+      await checkCRS();
+    } catch (error) {
+      setConnectionValue("chkCRS", "FALHOU");
+      LAB.setError(error);
     }
 
     LAB.appendLog("Checklist finalizado");
   }
 
-  function reset() {
-    LAB.setValue("chkFront", "—");
-    LAB.setValue("chkJS", "—");
-    LAB.setValue("chkConfig", "—");
-    LAB.setValue("chkRender", "—");
-    LAB.setValue("chkCRS", "—");
-    LAB.setValue("chkMic", "—");
-    LAB.setValue("chkTTS", "—");
-
-    LAB.appendLog("Reset executado", "warn");
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
-    LAB.appendLog("Painel de conexões pronto");
+    LAB.appendLog("Painel de conexões carregado");
 
-    document.getElementById("btnCheck")?.addEventListener("click", checkAll);
-    document.getElementById("btnReset")?.addEventListener("click", reset);
+    document.getElementById("btnCheck")?.addEventListener("click", runChecklist);
+    document.getElementById("btnReset")?.addEventListener("click", resetConnections);
     document.getElementById("btnClear")?.addEventListener("click", LAB.clearLog);
   });
-
 })();
