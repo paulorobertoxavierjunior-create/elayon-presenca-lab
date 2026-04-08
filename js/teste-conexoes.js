@@ -3,9 +3,29 @@
 
   const URL_RENDER_HEALTH = "https://nucleo-crs-elayon.onrender.com/health";
   const URL_CRS_ANALISAR = "https://nucleo-crs-elayon.onrender.com/api/crs/analisar";
+  const FETCH_TIMEOUT_MS = 12000;
 
   function setConnectionValue(id, value) {
     LAB.setValue(id, value);
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      return response;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   function resetConnections() {
@@ -65,29 +85,42 @@
 
   async function checkRender() {
     LAB.appendLog(`Testando Render em ${URL_RENDER_HEALTH}`);
+    setConnectionValue("chkRender", "TESTANDO...");
 
     const t0 = performance.now();
-    const response = await fetch(URL_RENDER_HEALTH, {
-      method: "GET"
-    });
-    const elapsed = Math.round(performance.now() - t0);
 
-    const text = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`Render falhou com HTTP ${response.status}: ${text}`);
-    }
-
-    let json = null;
     try {
-      json = JSON.parse(text);
-    } catch {
-      throw new Error("Render respondeu, mas não retornou JSON válido");
-    }
+      const response = await fetchWithTimeout(URL_RENDER_HEALTH, {
+        method: "GET"
+      });
 
-    setConnectionValue("chkRender", `OK (${elapsed}ms)`);
-    LAB.appendLog(`Render respondeu em ${elapsed}ms`);
-    LAB.appendLog(`Render payload: ${JSON.stringify(json)}`);
+      const elapsed = Math.round(performance.now() - t0);
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`Render falhou com HTTP ${response.status}: ${text}`);
+      }
+
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error("Render respondeu, mas não retornou JSON válido");
+      }
+
+      setConnectionValue("chkRender", `OK (${elapsed}ms)`);
+      LAB.appendLog(`Render respondeu em ${elapsed}ms`);
+      LAB.appendLog(`Render payload: ${JSON.stringify(json)}`);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        setConnectionValue("chkRender", "TIMEOUT");
+        LAB.appendLog(`Render excedeu ${FETCH_TIMEOUT_MS}ms`, "err");
+        return;
+      }
+
+      setConnectionValue("chkRender", "FALHOU");
+      LAB.setError(error);
+    }
   }
 
   async function checkCRS() {
@@ -105,33 +138,46 @@
 
     LAB.appendLog(`Testando CRS em ${URL_CRS_ANALISAR}`);
     LAB.appendLog(`Payload CRS: ${JSON.stringify(payload)}`);
+    setConnectionValue("chkCRS", "TESTANDO...");
 
     const t0 = performance.now();
-    const response = await fetch(URL_CRS_ANALISAR, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-    const elapsed = Math.round(performance.now() - t0);
 
-    const text = await response.text();
-
-    if (!response.ok) {
-      throw new Error(`CRS falhou com HTTP ${response.status}: ${text}`);
-    }
-
-    let json = null;
     try {
-      json = JSON.parse(text);
-    } catch {
-      throw new Error("CRS respondeu, mas não retornou JSON válido");
-    }
+      const response = await fetchWithTimeout(URL_CRS_ANALISAR, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-    setConnectionValue("chkCRS", `OK (${elapsed}ms)`);
-    LAB.appendLog(`CRS respondeu em ${elapsed}ms`);
-    LAB.appendLog(`CRS retorno: ${JSON.stringify(json)}`);
+      const elapsed = Math.round(performance.now() - t0);
+      const text = await response.text();
+
+      if (!response.ok) {
+        throw new Error(`CRS falhou com HTTP ${response.status}: ${text}`);
+      }
+
+      let json = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error("CRS respondeu, mas não retornou JSON válido");
+      }
+
+      setConnectionValue("chkCRS", `OK (${elapsed}ms)`);
+      LAB.appendLog(`CRS respondeu em ${elapsed}ms`);
+      LAB.appendLog(`CRS retorno: ${JSON.stringify(json)}`);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        setConnectionValue("chkCRS", "TIMEOUT");
+        LAB.appendLog(`CRS excedeu ${FETCH_TIMEOUT_MS}ms`, "err");
+        return;
+      }
+
+      setConnectionValue("chkCRS", "FALHOU");
+      LAB.setError(error);
+    }
   }
 
   async function runChecklist() {
@@ -172,19 +218,11 @@
       LAB.setError(error);
     }
 
-    try {
-      await checkRender();
-    } catch (error) {
-      setConnectionValue("chkRender", "FALHOU");
-      LAB.setError(error);
-    }
+    await checkRender();
 
-    try {
-      await checkCRS();
-    } catch (error) {
-      setConnectionValue("chkCRS", "FALHOU");
-      LAB.setError(error);
-    }
+    await sleep(500);
+
+    await checkCRS();
 
     LAB.appendLog("Checklist finalizado");
   }
