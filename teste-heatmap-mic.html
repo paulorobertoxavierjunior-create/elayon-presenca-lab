@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste 10.3 • Heatmap com microfone real</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+
+    <section class="card">
+      <h1>Teste 10.3 — Heatmap temporal com microfone real</h1>
+      <p>
+        Objetivo: captar áudio real do microfone e transformar o fluxo de intensidade em um
+        heatmap temporal vivo, criando uma base visual forte para o Presença.
+      </p>
+
+      <div class="row">
+        <button class="btn" id="btnLigarMic">Ligar microfone</button>
+        <button class="btn" id="btnIniciarHeatmap">Iniciar heatmap</button>
+        <button class="btn secondary" id="btnPararHeatmap">Parar</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="status">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Leitura atual</span>
+          <div class="value" id="leituraAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Volume atual</span>
+          <div class="value" id="volumeAtual">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Faixa dominante</span>
+          <div class="value" id="faixaAtual">—</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Heatmap temporal</h2>
+      <canvas id="heatmapCanvas" style="width:100%;height:360px;border-radius:12px;background:#050c12;"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Leitura resumida</h2>
+      <div class="grid">
+        <div class="field">
+          <span class="label">Silêncio estimado</span>
+          <div class="value" id="silencioEstimado">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Energia estimada</span>
+          <div class="value" id="energiaEstimada">—</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Oscilação</span>
+          <div class="value" id="oscilacaoEstimada">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-heatmap-mic.js"></script>
+</body>
+</html>
