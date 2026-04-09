@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste Auth — Cadastro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>Teste Auth — Cadastro</h1>
+      <p>
+        Objetivo: validar conexão com Supabase, criação de conta, tratamento de conta já existente
+        e redirecionamento para a tela de agradecimento.
+      </p>
+
+      <div class="row">
+        <a class="btn secondary" href="index.html">Voltar</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Nome</span>
+          <input id="signupName" type="text" placeholder="Seu nome">
+        </div>
+
+        <div class="field">
+          <span class="label">E-mail</span>
+          <input id="signupEmail" type="email" placeholder="seuemail@exemplo.com">
+        </div>
+
+        <div class="field">
+          <span class="label">Senha</span>
+          <div class="password-wrap">
+            <input id="signupPassword" type="password" placeholder="Crie sua senha">
+            <button type="button" class="toggle-password" data-target="signupPassword">👁</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">Confirmar senha</span>
+          <div class="password-wrap">
+            <input id="signupPasswordConfirm" type="password" placeholder="Repita sua senha">
+            <button type="button" class="toggle-password" data-target="signupPasswordConfirm">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <button class="btn" id="btnCriarConta">Criar conta</button>
+        <button class="btn secondary" id="btnResetar">Resetar</button>
+        <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <span class="label">Status</span>
+          <div class="value" id="statusGeral">aguardando</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último evento</span>
+          <div class="value" id="ultimoEvento">nenhum</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Último erro</span>
+          <div class="value" id="ultimoErro">nenhum</div>
+        </div>
+
+        <div class="field">
+          <span class="label">Resposta</span>
+          <div class="value" id="respostaAtual">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/teste-auth-cadastro.js"></script>
+</body>
+</html>
