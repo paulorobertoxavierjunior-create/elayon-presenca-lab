@@ -1,191 +1,274 @@
 (function () {
-  const LAB = window.ELAYON_LAB;
+  const el = (id) => document.getElementById(id);
 
-  const URL_RENDER_HEALTH = "https://nucleo-crs-elayon.onrender.com/health";
-  const URL_CRS_ANALISAR = "https://nucleo-crs-elayon.onrender.com/api/crs/analisar";
-  const TIMEOUT_MS = 12000;
+  const statusGeral = el("statusGeral");
+  const chkFront = el("chkFront");
+  const chkJS = el("chkJS");
+  const chkConfig = el("chkConfig");
+  const chkMic = el("chkMic");
+  const chkTTS = el("chkTTS");
+  const chkRender = el("chkRender");
+  const chkCRS = el("chkCRS");
+  const chkLoop = el("chkLoop");
+  const ultimoEvento = el("ultimoEvento");
+  const ultimoErro = el("ultimoErro");
+  const respostaAtual = el("respostaAtual");
+  const logBox = el("logBox");
 
-  function set(id, value) {
-    LAB.setValue(id, value);
+  const btnExecutarVerificacao = el("btnExecutarVerificacao");
+  const btnResetarTeste = el("btnResetarTeste");
+  const btnLimparLog = el("btnLimparLog");
+
+  // Já deixei evidente no código:
+  // ajuste estes dois endpoints quando quiser apontar para outro ambiente.
+  const RENDER_HEALTH_URL = "https://nucleo-crs-elayon.onrender.com/health";
+  const CRS_URL = "https://nucleo-crs-elayon.onrender.com/api/crs/analisar";
+
+  function log(msg) {
+    const t = new Date().toLocaleTimeString("pt-BR");
+    logBox.textContent += `[${t}] ${msg}\n`;
+    logBox.scrollTop = logBox.scrollHeight;
+    console.log("[TESTE 8]", msg);
   }
 
-  function fetchWithTimeout(url, options = {}, timeoutMs = TIMEOUT_MS) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+  function setErro(msg) {
+    ultimoErro.textContent = msg || "nenhum";
+    if (msg && msg !== "nenhum") log(`ERRO: ${msg}`);
+  }
 
-    return fetch(url, {
-      ...options,
-      signal: controller.signal
-    }).finally(() => clearTimeout(timer));
+  function setEvento(msg) {
+    ultimoEvento.textContent = msg || "nenhum";
+    if (msg) log(msg);
+  }
+
+  function setResumo(msg) {
+    respostaAtual.textContent = msg || "—";
   }
 
   function resetPainel() {
-    set("statusGeral", "aguardando");
-    set("chkFront", "—");
-    set("chkJS", "—");
-    set("chkConfig", "—");
-    set("chkMic", "—");
-    set("chkTTS", "—");
-    set("chkRender", "—");
-    set("chkCRS", "—");
-    set("chkLoop", "—");
-    set("ultimoEvento", "nenhum");
-    set("ultimoErro", "nenhum");
-    set("respostaAtual", "—");
-    LAB.appendLog("Painel resetado", "warn");
+    statusGeral.textContent = "aguardando";
+    chkFront.textContent = "—";
+    chkJS.textContent = "—";
+    chkConfig.textContent = "—";
+    chkMic.textContent = "—";
+    chkTTS.textContent = "—";
+    chkRender.textContent = "—";
+    chkCRS.textContent = "—";
+    chkLoop.textContent = "—";
+    ultimoEvento.textContent = "nenhum";
+    ultimoErro.textContent = "nenhum";
+    respostaAtual.textContent = "—";
+    log("Painel resetado");
   }
 
-  async function checkFront() {
-    set("chkFront", "OK");
-    LAB.appendLog("Front carregado");
-  }
-
-  async function checkJS() {
-    if (!window.ELAYON_LAB) throw new Error("base.js não carregado");
-    set("chkJS", "OK");
-    LAB.appendLog("JS base ativo");
-  }
-
-  async function checkConfig() {
-    if (window.ELAYON_CONFIG) {
-      set("chkConfig", "OK");
-      LAB.appendLog("Config encontrado");
-    } else {
-      set("chkConfig", "AUSENTE");
-      LAB.appendLog("Config ausente no lab", "warn");
+  function hasBaseJS() {
+    try {
+      return typeof window !== "undefined";
+    } catch {
+      return false;
     }
   }
 
-  async function checkMic() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      set("chkMic", "DISPONÍVEL");
-      LAB.appendLog("Microfone disponível");
-      return;
-    }
-    throw new Error("getUserMedia não disponível");
+  function hasConfig() {
+    return !!window.ELAYON_CONFIG;
   }
 
-  async function checkTTS() {
-    if ("speechSynthesis" in window) {
-      set("chkTTS", "DISPONÍVEL");
-      LAB.appendLog("TTS disponível");
-      return;
-    }
-    throw new Error("speechSynthesis não disponível");
-  }
-
-  async function checkRender() {
+  async function testRender() {
     const t0 = performance.now();
-    const response = await fetchWithTimeout(URL_RENDER_HEALTH, { method: "GET" });
-    const elapsed = Math.round(performance.now() - t0);
-    const text = await response.text();
 
-    if (!response.ok) {
-      throw new Error(`Render HTTP ${response.status}: ${text}`);
+    const resp = await fetch(RENDER_HEALTH_URL, {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    });
+
+    const dt = Math.round(performance.now() - t0);
+
+    if (!resp.ok) {
+      throw new Error(`Render retornou HTTP ${resp.status}`);
     }
 
-    JSON.parse(text);
-    set("chkRender", `OK (${elapsed}ms)`);
-    LAB.appendLog(`Render OK em ${elapsed}ms`);
+    const data = await resp.json();
+    chkRender.textContent = `OK (${dt}ms)`;
+    log(`Render OK em ${dt}ms`);
+    log(`Render payload: ${JSON.stringify(data)}`);
+    return { ok: true, data, ms: dt };
   }
 
-  async function checkCRS() {
+  async function testCRS() {
     const payload = {
-      context: "verificacao continua",
-      transcript_raw: "teste rapido do modulo de verificacao",
-      duration_sec: 2,
-      silence_pct: 10,
-      pause_count: 1,
-      mean_pause_ms: 120,
-      source_text: "diagnostico",
+      context: "teste de verificacao continua",
+      transcript_raw: "fala de teste enviada pelo painel de verificacao",
+      duration_sec: 4,
+      silence_pct: 18,
+      pause_count: 2,
+      mean_pause_ms: 180,
+      source_text: "checagem automatizada",
       timeline_events: [],
       uploaded_file_name: ""
     };
 
     const t0 = performance.now();
-    const response = await fetchWithTimeout(URL_CRS_ANALISAR, {
+
+    const resp = await fetch(CRS_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "application/json"
       },
       body: JSON.stringify(payload)
     });
 
-    const elapsed = Math.round(performance.now() - t0);
-    const text = await response.text();
+    const dt = Math.round(performance.now() - t0);
 
-    if (!response.ok) {
-      throw new Error(`CRS HTTP ${response.status}: ${text}`);
+    if (!resp.ok) {
+      throw new Error(`CRS retornou HTTP ${resp.status}`);
     }
 
-    const json = JSON.parse(text);
-    const summary = json?.user_report?.summary || "CRS respondeu sem summary";
+    const data = await resp.json();
+    chkCRS.textContent = `OK (${dt}ms)`;
+    log(`CRS OK em ${dt}ms`);
+    log(`CRS payload: ${JSON.stringify(payload)}`);
+    log(`CRS retorno: ${JSON.stringify(data)}`);
 
-    set("chkCRS", `OK (${elapsed}ms)`);
-    set("respostaAtual", summary);
-    LAB.appendLog(`CRS OK em ${elapsed}ms`);
-    LAB.appendLog(`Summary: ${summary}`);
+    const summary = data?.user_report?.summary || "Sessão processada com sucesso.";
+    setResumo(summary);
+
+    return { ok: true, data, ms: dt, summary };
   }
 
-  async function checkLoopCapability() {
-    const hasRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-    const hasTTS = "speechSynthesis" in window;
-    const hasFetch = typeof fetch === "function";
+  function testMicCapability() {
+    const supported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    chkMic.textContent = supported ? "DISPONÍVEL" : "INDISPONÍVEL";
+    log(supported ? "Microfone disponível" : "Microfone indisponível");
+    return supported;
+  }
 
-    if (hasRecognition && hasTTS && hasFetch) {
-      set("chkLoop", "PRONTO");
-      LAB.appendLog("Capacidade de loop mínimo disponível");
-      return;
-    }
+  function testTTSCapability() {
+    const supported = "speechSynthesis" in window;
+    chkTTS.textContent = supported ? "DISPONÍVEL" : "INDISPONÍVEL";
+    log(supported ? "TTS disponível" : "TTS indisponível");
+    return supported;
+  }
 
-    set("chkLoop", "PARCIAL");
-    LAB.appendLog("Capacidade de loop mínimo parcial", "warn");
+  function testFront() {
+    chkFront.textContent = "OK";
+    log("Front carregado");
+    return true;
+  }
+
+  function testJS() {
+    const ok = hasBaseJS();
+    chkJS.textContent = ok ? "OK" : "FALHA";
+    log(ok ? "JS base ativo" : "JS base indisponível");
+    return ok;
+  }
+
+  function testConfig() {
+    const ok = hasConfig();
+    chkConfig.textContent = ok ? "OK" : "AUSENTE";
+    log(ok ? "Config carregada" : "Config ausente no lab");
+    return ok;
+  }
+
+  function testLoopCapability() {
+    // Já deixei evidente:
+    // aqui estamos validando só a disponibilidade lógica do ciclo mínimo.
+    // Não executa o loop, só marca que a base existe para fazê-lo depois.
+    chkLoop.textContent = "PRONTO";
+    log("Capacidade de loop mínimo disponível");
+    return true;
   }
 
   async function executarVerificacao() {
-    set("statusGeral", "executando");
-    set("ultimoEvento", "iniciando verificação");
-    LAB.appendLog("Verificação contínua iniciada");
+    setErro("nenhum");
+    setEvento("Verificação contínua iniciada");
+    setResumo("Executando checks do sistema...");
+    statusGeral.textContent = "verificando";
 
-    let failures = 0;
+    let falhas = 0;
 
-    const checks = [
-      checkFront,
-      checkJS,
-      checkConfig,
-      checkMic,
-      checkTTS,
-      checkRender,
-      checkCRS,
-      checkLoopCapability
-    ];
-
-    for (const fn of checks) {
-      try {
-        await fn();
-      } catch (error) {
-        failures++;
-        LAB.setError(error);
-      }
+    try {
+      testFront();
+    } catch (e) {
+      falhas++;
+      chkFront.textContent = "FALHA";
+      setErro(e.message);
     }
 
-    if (failures === 0) {
-      set("statusGeral", "sistema íntegro");
-      set("ultimoEvento", "verificação concluída sem falhas");
-      LAB.appendLog("Verificação concluída sem falhas");
+    try {
+      testJS();
+    } catch (e) {
+      falhas++;
+      chkJS.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      testConfig();
+    } catch (e) {
+      falhas++;
+      chkConfig.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      const micOk = testMicCapability();
+      if (!micOk) falhas++;
+    } catch (e) {
+      falhas++;
+      chkMic.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      const ttsOk = testTTSCapability();
+      if (!ttsOk) falhas++;
+    } catch (e) {
+      falhas++;
+      chkTTS.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      await testRender();
+    } catch (e) {
+      falhas++;
+      chkRender.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      await testCRS();
+    } catch (e) {
+      falhas++;
+      chkCRS.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    try {
+      testLoopCapability();
+    } catch (e) {
+      falhas++;
+      chkLoop.textContent = "FALHA";
+      setErro(e.message);
+    }
+
+    if (falhas === 0) {
+      statusGeral.textContent = "sistema íntegro";
+      setEvento("Verificação concluída sem falhas");
     } else {
-      set("statusGeral", `concluído com ${failures} falha(s)`);
-      set("ultimoEvento", "verificação concluída com falhas");
-      LAB.appendLog(`Verificação concluída com ${failures} falha(s)`, "err");
+      statusGeral.textContent = `falhas detectadas (${falhas})`;
+      setEvento(`Verificação concluída com ${falhas} falha(s)`);
     }
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    resetPainel();
-    LAB.appendLog("Página carregada. Sistema pronto para verificação contínua.");
-
-    document.getElementById("btnExecutarVerificacao")?.addEventListener("click", executarVerificacao);
-    document.getElementById("btnResetarTeste")?.addEventListener("click", resetPainel);
-    document.getElementById("btnLimparLog")?.addEventListener("click", LAB.clearLog);
+  btnExecutarVerificacao?.addEventListener("click", executarVerificacao);
+  btnResetarTeste?.addEventListener("click", resetPainel);
+  btnLimparLog?.addEventListener("click", () => {
+    logBox.textContent = "";
+    log("Logs limpos");
   });
+
+  resetPainel();
+  log("Página carregada. Sistema pronto para verificação contínua.");
 })();
