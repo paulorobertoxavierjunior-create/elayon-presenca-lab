@@ -26,14 +26,17 @@
     });
   }
 
-  function normalizeText(txt) {
-    return (txt || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+
+function normalizeText(txt) {
+  return (txt || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.,;:!?-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+}
 
   function stripPhrase(txt, phrase) {
     if (!phrase) return (txt || "").trim();
