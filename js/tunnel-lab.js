@@ -26,6 +26,30 @@
     });
   }
 
+  function normalizeText(txt) {
+    return (txt || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function stripPhrase(txt, phrase) {
+    if (!phrase) return (txt || "").trim();
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(escaped, "gi");
+    return (txt || "").replace(re, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function stripPhrases(txt, phrases = []) {
+    let out = txt || "";
+    phrases.forEach((p) => {
+      out = stripPhrase(out, p);
+    });
+    return out.trim();
+  }
+
   async function healthcheck() {
     const base = {
       tts: "speechSynthesis" in window,
@@ -48,7 +72,7 @@
   }
 
   const tts = {
-    speak(text) {
+    async speak(text, options = {}) {
       return new Promise((resolve, reject) => {
         try {
           if (!("speechSynthesis" in window)) {
@@ -56,13 +80,25 @@
             return;
           }
 
-          window.speechSynthesis.cancel();
+          const {
+            lang = "pt-BR",
+            rate = 0.96,
+            pitch = 1,
+            volume = 1,
+            cancelPrevious = true
+          } = options;
+
+          if (cancelPrevious) {
+            try {
+              window.speechSynthesis.cancel();
+            } catch {}
+          }
 
           const utter = new SpeechSynthesisUtterance(text);
-          utter.lang = "pt-BR";
-          utter.rate = 1;
-          utter.pitch = 1;
-          utter.volume = 1;
+          utter.lang = lang;
+          utter.rate = rate;
+          utter.pitch = pitch;
+          utter.volume = volume;
 
           utter.onstart = () => {
             ttsActive = true;
@@ -86,7 +122,7 @@
       });
     },
 
-    stop() {
+    async stop() {
       return new Promise((resolve) => {
         try {
           if ("speechSynthesis" in window) {
@@ -96,6 +132,10 @@
         ttsActive = false;
         resolve({ ok: true });
       });
+    },
+
+    isActive() {
+      return ttsActive;
     }
   };
 
@@ -109,16 +149,22 @@
         return {
           ok: true,
           tracks: activeStream.getAudioTracks().length,
-          labels: activeStream.getAudioTracks().map(t => t.label || "Padrão")
+          labels: activeStream.getAudioTracks().map((t) => t.label || "Padrão")
         };
       }
 
-      activeStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      activeStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
 
       return {
         ok: true,
         tracks: activeStream.getAudioTracks().length,
-        labels: activeStream.getAudioTracks().map(t => t.label || "Padrão")
+        labels: activeStream.getAudioTracks().map((t) => t.label || "Padrão")
       };
     },
 
@@ -128,19 +174,37 @@
         activeStream = null;
       }
       return { ok: true };
+    },
+
+    isOpen() {
+      return !!activeStream;
     }
   };
 
+  function stopRecognitionInternal() {
+    try {
+      activeRecognition && activeRecognition.stop();
+    } catch {}
+    recognitionRunning = false;
+  }
+
+  function createRecognition() {
+    const RecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!RecognitionCtor) {
+      throw new Error("SpeechRecognition não disponível");
+    }
+    return new RecognitionCtor();
+  }
+
   const stt = {
-    listenOnce({ silenceMs = 4000, onPartial } = {}) {
+    async listenOnce({ silenceMs = 4000, onPartial } = {}) {
+      if (recognitionRunning) {
+        stopRecognitionInternal();
+      }
+
       return new Promise((resolve, reject) => {
         try {
-          const RecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-          if (!RecognitionCtor) {
-            reject(new Error("SpeechRecognition não disponível"));
-            return;
-          }
+          const recognition = createRecognition();
 
           let finalText = "";
           let partialText = "";
@@ -153,25 +217,26 @@
             recognitionRunning = false;
             clearTimeout(silenceTimer);
             try {
-              activeRecognition && activeRecognition.stop();
+              recognition.stop();
             } catch {}
+            activeRecognition = null;
             resolve(result);
           }
 
-          activeRecognition = new RecognitionCtor();
-          activeRecognition.lang = "pt-BR";
-          activeRecognition.interimResults = true;
-          activeRecognition.continuous = true;
+          activeRecognition = recognition;
+          recognition.lang = "pt-BR";
+          recognition.interimResults = true;
+          recognition.continuous = true;
 
-          activeRecognition.onstart = () => {
+          recognition.onstart = () => {
             recognitionRunning = true;
           };
 
-          activeRecognition.onresult = (event) => {
+          recognition.onresult = (event) => {
             partialText = "";
 
             for (let i = event.resultIndex; i < event.results.length; i++) {
-              const trecho = event.results[i][0].transcript;
+              const trecho = event.results[i][0].transcript || "";
               if (event.results[i].isFinal) {
                 finalText += `${trecho} `;
               } else {
@@ -196,18 +261,20 @@
                 ok: true,
                 text: currentText,
                 final: finalText.trim(),
-                partial: partialText.trim()
+                partial: partialText.trim(),
+                matched_phrase: null
               });
             }, silenceMs);
           };
 
-          activeRecognition.onerror = (event) => {
+          recognition.onerror = (event) => {
             recognitionRunning = false;
             clearTimeout(silenceTimer);
+            activeRecognition = null;
             reject(new Error(event.error || "erro no reconhecimento"));
           };
 
-          activeRecognition.onend = () => {
+          recognition.onend = () => {
             if (!finished) {
               recognitionRunning = false;
               clearTimeout(silenceTimer);
@@ -215,25 +282,172 @@
                 ok: true,
                 text: `${finalText}${partialText}`.trim(),
                 final: finalText.trim(),
-                partial: partialText.trim()
+                partial: partialText.trim(),
+                matched_phrase: null
               });
             }
           };
 
-          activeRecognition.start();
+          recognition.start();
         } catch (err) {
           recognitionRunning = false;
+          activeRecognition = null;
           reject(err);
         }
       });
     },
 
+    async listenForPhrase({
+      stopPhrases = [],
+      onPartial,
+      interimResults = true,
+      continuous = true,
+      silenceFailsafeMs = 60000
+    } = {}) {
+      if (recognitionRunning) {
+        stopRecognitionInternal();
+      }
+
+      return new Promise((resolve, reject) => {
+        try {
+          const recognition = createRecognition();
+
+          let finalText = "";
+          let partialText = "";
+          let finished = false;
+          let failsafeTimer = null;
+
+          const normalizedStops = stopPhrases.map((s) => normalizeText(s)).filter(Boolean);
+
+          function finish(result) {
+            if (finished) return;
+            finished = true;
+            recognitionRunning = false;
+            clearTimeout(failsafeTimer);
+            try {
+              recognition.stop();
+            } catch {}
+            activeRecognition = null;
+            resolve(result);
+          }
+
+          function refreshFailsafe() {
+            clearTimeout(failsafeTimer);
+            failsafeTimer = setTimeout(() => {
+              finish({
+                ok: true,
+                text: `${finalText}${partialText}`.trim(),
+                final: finalText.trim(),
+                partial: partialText.trim(),
+                matched_phrase: null,
+                timed_out: true
+              });
+            }, silenceFailsafeMs);
+          }
+
+          activeRecognition = recognition;
+          recognition.lang = "pt-BR";
+          recognition.interimResults = interimResults;
+          recognition.continuous = continuous;
+
+          recognition.onstart = () => {
+            recognitionRunning = true;
+            refreshFailsafe();
+          };
+
+          recognition.onresult = (event) => {
+            partialText = "";
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const trecho = event.results[i][0].transcript || "";
+              if (event.results[i].isFinal) {
+                finalText += `${trecho} `;
+              } else {
+                partialText += `${trecho} `;
+              }
+            }
+
+            const currentText = `${finalText}${partialText}`.trim();
+
+            if (typeof onPartial === "function") {
+              onPartial({
+                ok: true,
+                text: currentText,
+                final: finalText.trim(),
+                partial: partialText.trim()
+              });
+            }
+
+            refreshFailsafe();
+
+            const normalizedCurrent = normalizeText(currentText);
+            const matched = normalizedStops.find((phrase) =>
+              normalizedCurrent.includes(phrase)
+            );
+
+            if (matched) {
+              finish({
+                ok: true,
+                text: currentText,
+                final: finalText.trim(),
+                partial: partialText.trim(),
+                matched_phrase: matched,
+                cleaned_text: stripPhrases(currentText, stopPhrases)
+              });
+            }
+          };
+
+          recognition.onerror = (event) => {
+            recognitionRunning = false;
+            clearTimeout(failsafeTimer);
+            activeRecognition = null;
+            reject(new Error(event.error || "erro no reconhecimento"));
+          };
+
+          recognition.onend = () => {
+            if (!finished) {
+              recognitionRunning = false;
+              clearTimeout(failsafeTimer);
+              finish({
+                ok: true,
+                text: `${finalText}${partialText}`.trim(),
+                final: finalText.trim(),
+                partial: partialText.trim(),
+                matched_phrase: null,
+                cleaned_text: stripPhrases(`${finalText}${partialText}`.trim(), stopPhrases)
+              });
+            }
+          };
+
+          recognition.start();
+        } catch (err) {
+          recognitionRunning = false;
+          activeRecognition = null;
+          reject(err);
+        }
+      });
+    },
+
+    async listenForAnyPhrase({
+      phrases = [],
+      onPartial,
+      silenceFailsafeMs = 15000
+    } = {}) {
+      return this.listenForPhrase({
+        stopPhrases: phrases,
+        onPartial,
+        silenceFailsafeMs
+      });
+    },
+
     stop() {
-      try {
-        activeRecognition && activeRecognition.stop();
-      } catch {}
-      recognitionRunning = false;
+      stopRecognitionInternal();
+      activeRecognition = null;
       return { ok: true };
+    },
+
+    isRunning() {
+      return recognitionRunning;
     }
   };
 
@@ -257,7 +471,10 @@
     async analyze(payload) {
       const res = await withTimeout(fetch(CRS_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(payload)
       }));
 
@@ -276,14 +493,21 @@
   };
 
   const loop = {
-    async runStep({ instruction, context, sourceText }) {
+    async runStep({
+      instruction,
+      context,
+      sourceText,
+      stopPhrase = "ok ok"
+    }) {
       await tts.speak(instruction);
 
-      const heard = await stt.listenOnce({
-        silenceMs: 4000
+      const heard = await stt.listenForPhrase({
+        stopPhrases: [stopPhrase]
       });
 
-      const payload = crs.buildPayload(heard.text, {
+      const finalText = heard.cleaned_text || heard.text || "";
+
+      const payload = crs.buildPayload(finalText, {
         context: context || "",
         source_text: sourceText || instruction
       });
@@ -305,6 +529,11 @@
     mic,
     stt,
     crs,
-    loop
+    loop,
+    utils: {
+      normalizeText,
+      stripPhrase,
+      stripPhrases
+    }
   };
 })();
