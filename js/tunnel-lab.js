@@ -38,12 +38,26 @@ function normalizeText(txt) {
 
 }
 
-  function stripPhrase(txt, phrase) {
-    if (!phrase) return (txt || "").trim();
-    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const re = new RegExp(escaped, "gi");
-    return (txt || "").replace(re, " ").replace(/\s+/g, " ").trim();
-  }
+function stripPhrase(txt, phrase) {
+  if (!phrase) return (txt || "").trim();
+
+  const normalizedPhrase = normalizeText(phrase);
+
+  const variants = [
+    normalizedPhrase,
+    normalizedPhrase.replace(/\s+/g, ""),
+    normalizedPhrase.replace(/\s+/g, "[\\s,.!?;:-]*")
+  ];
+
+  let out = txt || "";
+
+  variants.forEach((variant) => {
+    const re = new RegExp(variant, "gi");
+    out = out.replace(re, " ");
+  });
+
+  return out.replace(/\s+/g, " ").trim();
+}
 
   function stripPhrases(txt, phrases = []) {
     let out = txt || "";
