@@ -1,411 +1,228 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Presença Lab · TESTE MODULAR</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Presença Lab · Teste API</title>
+  <link rel="stylesheet" href="styles.css"/>
   <style>
-    body { font-family: -apple-system,BlinkMacSystemFont,sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
-    .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { color: #1a1a1a; font-size: 28px; font-weight: 700; margin: 0 0 8px 0; }
-    h2 { color: #333; font-size: 18px; font-weight: 600; margin: 0 0 16px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
-    button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-primary:hover { background: #2563eb; }
-    .btn-secondary { background: #f3f4f6; color: #374151; }
-    .btn-secondary:hover { background: #e5e7eb; }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-danger:hover { background: #dc2626; }
-    .status { padding: 12px; border-radius: 8px; margin: 8px 0; font-family: monospace; font-size: 14px; }
-    .status.ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    .status.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-    .status.warn { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .status.info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-    textarea, input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-    .grid { display: grid; gap: 16px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; }
-    #log { height: 200px; overflow-y: auto; border: 1px solid #d1d5db; border-radius: 8px; padding: 12px; background: #f9fafb; font-family: monospace; font-size: 12px; }
-    .mic-btn { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #3b82f6; background: white; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; }
-    .mic-btn.recording { background: #ef4444; color: white; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .chat-area {
+      min-height: 300px; max-height: 420px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 4px 0; margin-bottom: 14px;
+    }
+    .msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6; word-break: break-word; }
+    .msg.user    { align-self: flex-end; background: var(--primary); color: #fff; border-radius: 14px 14px 4px 14px; }
+    .msg.ia      { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; color: var(--text); }
+    .msg.sistema { align-self: center; background: #f4fbfc; border: 1px solid var(--line); color: var(--muted); font-size: 12px; border-radius: 10px; padding: 6px 12px; }
+    .input-row { display: flex; gap: 8px; align-items: flex-end; }
+    .input-txt { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; resize: none; outline: none; font-family: Arial, sans-serif; max-height: 100px; }
+    .input-txt:focus { border-color: var(--primary); }
+    .btn-enviar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn-enviar svg { width: 18px; height: 18px; fill: #fff; }
+    .btn-enviar:disabled { background: var(--line); cursor: not-allowed; }
+    .status-linha { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; min-height: 22px; }
+    .status-linha.ok  { color: var(--ok); font-weight: bold; }
+    .status-linha.err { color: var(--err); font-weight: bold; }
+    .status-linha.busy { color: var(--warn); }
+    input.campo, select.campo {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+      border-radius: 8px; font-size: 13px; background: #fff; margin-bottom: 8px;
+    }
+    .nota-prov { font-size: 11px; color: var(--muted); margin-bottom: 12px; display: block; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🔧 Presença Lab · TESTE MODULAR</h1>
-    <p>Teste cada função separadamente. Chave grátis: <strong>Groq (mais rápida)</strong></p>
+<main class="shell">
+
+  <section class="card">
+    <h1>Presença Lab · Teste API</h1>
+    <p>Configure a chave, escolha o provedor e mande um "Olá". Se a IA responder de forma natural — está conectada.</p>
+    <div class="row"><a class="btn secondary" href="index.html">← Voltar</a></div>
+  </section>
+
+  <section class="card">
+    <h2>Configuração</h2>
+    <span class="label">Provedor</span>
+    <select class="campo" id="provedor">
+      <option value="gemini">Gemini — Google (Gratuito)</option>
+      <option value="groq">Groq — LLaMA (Gratuito)</option>
+      <option value="mistral">Mistral AI (Gratuito)</option>
+      <option value="claude">Claude — Anthropic (Pago)</option>
+      <option value="openai">GPT — OpenAI (Pago)</option>
+    </select>
+    <span class="nota-prov" id="notaProv"></span>
+    <span class="label">Chave da API</span>
+    <input type="password" class="campo" id="campoChave" placeholder="Cole sua chave aqui..."/>
     <div class="row">
-      <button class="btn-primary" onclick="testarTudo()">🚀 Testar Tudo</button>
-      <button class="btn-secondary" onclick="limparTudo()">🧹 Limpar Tudo</button>
+      <button class="btn" id="btnSalvar">Salvar e conectar</button>
+      <button class="btn secondary" id="btnLimparChat">Limpar chat</button>
     </div>
-  </div>
+    <div class="status-linha" id="statusConexao">Aguardando configuração</div>
+  </section>
 
-  <!-- 1. CONFIGURAÇÃO -->
-  <div class="card">
-    <h2>1️⃣ Configuração</h2>
-    <div class="grid">
-      <div>
-        <label>Chave API (Groq grátis):</label>
-        <input type="password" id="apiKey" placeholder="groq.com/keys" />
-        <small><a href="https://console.groq.com/keys" target="_blank">Pegar chave GRÁTIS no Groq</a></small>
-      </div>
+  <section class="card">
+    <h2>Chat</h2>
+    <div class="chat-area" id="chatArea"></div>
+    <div class="input-row">
+      <textarea class="input-txt" id="inputTxt" rows="1" placeholder="Digite e pressione Enter..."></textarea>
+      <button class="btn-enviar" id="btnEnviar" disabled>
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
     </div>
-    <div class="row">
-      <button class="btn-primary" onclick="salvarChave()">💾 Salvar Chave</button>
-      <button class="btn-secondary" onclick="testarAPI()">🧪 Testar API</button>
+  </section>
+
+  <section class="card">
+    <h2>Log técnico</h2>
+    <div class="log" id="logBox"></div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn secondary" id="btnLimparLog">Limpar log</button>
     </div>
-    <div id="statusAPI" class="status" style="display:none;"></div>
-  </div>
+  </section>
 
-  <!-- 2. MICROFONE -->
-  <div class="card">
-    <h2>2️⃣ Microfone</h2>
-    <div style="text-align:center; margin-bottom:20px;">
-      <button class="mic-btn" id="micBtn">🎤</button>
-      <div id="micStatus" style="margin-top:8px; font-weight:500;">Clique para gravar</div>
-    </div>
-    <div id="statusMic" class="status" style="display:none;"></div>
-    <button class="btn-primary" onclick="testarMicrofone()">🧪 Testar Microfone</button>
-  </div>
-
-  <!-- 3. MÉTRICAS ÁUDIO -->
-  <div class="card">
-    <h2>3️⃣ Métricas Áudio (Local)</h2>
-    <button class="btn-primary" onclick="testarMetricas()">🧪 Extrair Métricas</button>
-    <div id="metricasResult" class="status" style="display:none;"></div>
-  </div>
-
-  <!-- 4. TRANSCRIÇÃO -->
-  <div class="card">
-    <h2>4️⃣ Transcrição</h2>
-    <textarea id="textoInput" placeholder="Digite aqui OU grave áudio" rows="3"></textarea>
-    <div class="row">
-      <button class="btn-primary" onclick="testarTranscricaoTexto()">📝 Transcrever Texto</button>
-      <button class="btn-secondary" onclick="testarTranscricaoAudio()">🎵 Transcrever Áudio</button>
-    </div>
-    <div id="transcricaoResult" class="status" style="display:none;"></div>
-  </div>
-
-  <!-- 5. CRS -->
-  <div class="card">
-    <h2>5️⃣ CRS (Análise Emocional)</h2>
-    <button class="btn-primary" onclick="testarCRS()">🧪 Testar CRS</button>
-    <div id="crsResult" class="status" style="display:none;"></div>
-  </div>
-
-  <!-- 6. RESPOSTA IA -->
-  <div class="card">
-    <h2>6️⃣ Resposta IA Calibrada</h2>
-    <textarea id="textoFinal" placeholder="Texto + CRS aqui" rows="2"></textarea>
-    <textarea id="respostaIA" readonly placeholder="Resposta aparece aqui" rows="4"></textarea>
-    <button class="btn-primary" onclick="testarRespostaIA()">🤖 Gerar Resposta</button>
-  </div>
-
-  <!-- LOG -->
-  <div class="card">
-    <h2>📋 Log Técnico</h2>
-    <div id="log"></div>
-  </div>
-
-  <script>
-    // GLOBALS
-    let apiKey = '';
-    let audioBlob = null;
-    let metricas = null;
-    let isRecording = false;
-    let mediaRecorder = null;
-    let stream = null;
-
-    // LOG
-    function log(msg, type = 'info') {
-      const logDiv = document.getElementById('log');
-      const timestamp = new Date().toLocaleTimeString();
-      logDiv.innerHTML += `<div>[${timestamp}] ${msg}</div>`;
-      logDiv.scrollTop = logDiv.scrollHeight;
-      console.log(`[${timestamp}] ${msg}`);
+</main>
+<script src="js/base.js"></script>
+<script>
+var PROVEDORES = {
+  gemini: {
+    nota: 'Gratuito · aistudio.google.com/apikey · chave começa com AIza...',
+    chamar: async function(chave, hist, sys) {
+      var contents = hist.map(function(m) { return { role: m.role==='assistant'?'model':'user', parts:[{text:m.content}] }; });
+      var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+chave, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ system_instruction:{parts:[{text:sys}]}, contents:contents, generationConfig:{maxOutputTokens:600,temperature:0.8} })
+      });
+      if (!res.ok) { var e=await res.text(); throw new Error('Gemini '+res.status+': '+e.slice(0,120)); }
+      var d=await res.json(); return d.candidates[0].content.parts[0].text.trim();
     }
-
-    function showStatus(id, msg, type) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.className = `status ${type}`;
-      el.style.display = 'block';
+  },
+  groq: {
+    nota: 'Gratuito · console.groq.com · chave começa com gsk_...',
+    chamar: async function(chave, hist, sys) {
+      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
+        body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
+      });
+      if (!res.ok) { var e=await res.text(); throw new Error('Groq '+res.status+': '+e.slice(0,120)); }
+      var d=await res.json(); return d.choices[0].message.content.trim();
     }
-
-    function limparTudo() {
-      document.querySelectorAll('.status').forEach(el => el.style.display = 'none');
-      document.getElementById('log').innerHTML = '';
-      document.getElementById('respostaIA').value = '';
-      document.getElementById('textoInput').value = '';
-      document.getElementById('textoFinal').value = '';
-      log('🧹 Tudo limpo!');
+  },
+  mistral: {
+    nota: 'Gratuito · console.mistral.ai',
+    chamar: async function(chave, hist, sys) {
+      var res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
+        body: JSON.stringify({ model:'mistral-small-latest', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
+      });
+      if (!res.ok) { var e=await res.text(); throw new Error('Mistral '+res.status+': '+e.slice(0,120)); }
+      var d=await res.json(); return d.choices[0].message.content.trim();
     }
-
-    // 1. CONFIG
-    function salvarChave() {
-      apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey) return showStatus('statusAPI', '❌ Chave vazia', 'error');
-      localStorage.setItem('presenca_test_key', apiKey);
-      showStatus('statusAPI', '✅ Chave salva! (Groq/Llama3)', 'ok');
-      log('Chave salva no localStorage');
+  },
+  claude: {
+    nota: 'Pago · console.anthropic.com · chave começa com sk-ant-...',
+    chamar: async function(chave, hist, sys) {
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST', headers:{'Content-Type':'application/json','x-api-key':chave,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:600, system:sys, messages:hist })
+      });
+      if (!res.ok) { var e=await res.text(); throw new Error('Claude '+res.status+': '+e.slice(0,120)); }
+      var d=await res.json(); return d.content[0].text.trim();
     }
-
-    async function testarAPI() {
-      apiKey = localStorage.getItem('presenca_test_key') || document.getElementById('apiKey').value.trim();
-      if (!apiKey) return showStatus('statusAPI', '❌ Sem chave', 'error');
-      
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: 'Oi' }],
-            model: 'llama3-8b-8192'
-          })
-        });
-        
-        if (res.ok) {
-          showStatus('statusAPI', '✅ API Groq funcionando!', 'ok');
-          log('API testada: OK');
-        } else {
-          showStatus('statusAPI', `❌ Erro ${res.status}`, 'error');
-        }
-      } catch(e) {
-        showStatus('statusAPI', `❌ ${e.message}`, 'error');
-        log('Erro API: ' + e.message);
-      }
+  },
+  openai: {
+    nota: 'Pago · platform.openai.com/api-keys · chave começa com sk-...',
+    chamar: async function(chave, hist, sys) {
+      var res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
+        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
+      });
+      if (!res.ok) { var e=await res.text(); throw new Error('OpenAI '+res.status+': '+e.slice(0,120)); }
+      var d=await res.json(); return d.choices[0].message.content.trim();
     }
+  }
+};
 
-    // 2. MICROFONE
-    document.getElementById('micBtn').addEventListener('click', toggleMic);
+var chaveAtiva='', provedorAtivo='gemini', historico=[];
+var SYSTEM='Você é uma presença acolhedora. Responda em português brasileiro de forma natural, direta e calorosa.';
 
-    async function toggleMic() {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    }
+(function boot(){
+  chaveAtiva = localStorage.getItem('lab_gemini_key') || '';
+  var cfg = localStorage.getItem('elayon_ia_config');
+  if (cfg) { try { var p=JSON.parse(cfg); chaveAtiva=chaveAtiva||p.chave||''; provedorAtivo=p.provedor||'gemini'; } catch(e){} }
+  if (chaveAtiva) { document.getElementById('campoChave').value=chaveAtiva; document.getElementById('btnEnviar').disabled=false; setStatus('Chave carregada do storage. Pronto.','ok'); log('Chave carregada automaticamente','ok'); }
+  document.getElementById('provedor').value = provedorAtivo;
+  atualizarNota();
+  msg('sistema','Configure a chave e mande um "Olá" para testar a conexão.');
+})();
 
-    async function startRecording() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        const chunks = [];
-        
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          audioBlob = new Blob(chunks, { type: 'audio/webm' });
-          showStatus('statusMic', `✅ Áudio gravado: ${Math.round(audioBlob.size/1024)}KB`, 'ok');
-          log('Áudio capturado');
-        };
-        
-        mediaRecorder.start();
-        isRecording = true;
-        document.getElementById('micBtn').classList.add('recording');
-        document.getElementById('micBtn').textContent = '⏹️';
-        document.getElementById('micStatus').textContent = 'Gravando...';
-        log('Gravação iniciada');
-      } catch(e) {
-        showStatus('statusMic', `❌ Microfone: ${e.message}`, 'error');
-      }
-    }
+function log(m,t){ ELAYON_LAB.appendLog(m,t||'ok'); }
+function setStatus(m,t){ var el=document.getElementById('statusConexao'); el.textContent=m; el.className='status-linha'+(t?' '+t:''); }
+function atualizarNota(){ var p=document.getElementById('provedor').value; document.getElementById('notaProv').textContent=PROVEDORES[p]?PROVEDORES[p].nota:''; }
 
-    function stopRecording() {
-      mediaRecorder.stop();
-      stream.getTracks().forEach(track => track.stop());
-      isRecording = false;
-      document.getElementById('micBtn').classList.remove('recording');
-      document.getElementById('micBtn').textContent = '🎤';
-      document.getElementById('micStatus').textContent = 'Clique para gravar';
-    }
+function msg(role, texto){
+  var area=document.getElementById('chatArea');
+  var div=document.createElement('div'); div.className='msg '+role; div.textContent=texto;
+  area.appendChild(div); area.scrollTop=area.scrollHeight;
+}
 
-    async function testarMicrofone() {
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-        s.getTracks().forEach(t => t.stop());
-        showStatus('statusMic', '✅ Microfone OK', 'ok');
-        log('Microfone testado: OK');
-      } catch(e) {
-        showStatus('statusMic', `❌ Microfone bloqueado: ${e.message}`, 'error');
-      }
-    }
+document.getElementById('provedor').addEventListener('change', atualizarNota);
 
-    // 3. MÉTRICAS
-    async function testarMetricas() {
-      if (!audioBlob) return showStatus('metricasResult', '❌ Grave áudio primeiro', 'error');
-      
-      try {
-        metricas = await extrairMetricas(audioBlob);
-        showStatus('metricasResult', `✅ Silêncio: ${metricas.silence_pct}% | Energia: ${metricas.energy_pct}%`, 'ok');
-        log('Métricas extraídas: ' + JSON.stringify(metricas, null, 2));
-        document.getElementById('textoFinal').value = JSON.stringify(metricas, null, 2);
-      } catch(e) {
-        showStatus('metricasResult', `❌ ${e.message}`, 'error');
-      }
-    }
+document.getElementById('btnSalvar').addEventListener('click', function(){
+  var chave=document.getElementById('campoChave').value.trim();
+  var prov=document.getElementById('provedor').value;
+  if (!chave){ setStatus('Chave vazia.','err'); return; }
+  chaveAtiva=chave; provedorAtivo=prov;
+  localStorage.setItem('lab_gemini_key', chave);
+  localStorage.setItem('elayon_ia_config', JSON.stringify({chave:chave,provedor:prov,enabled:true,endpoint:''}));
+  document.getElementById('btnEnviar').disabled=false;
+  setStatus('Chave salva · '+prov+' · Mande um "Olá"','ok');
+  log('Chave salva · provedor: '+prov,'ok');
+});
 
-    // FUNÇÃO MÉTRICAS (igual ao original, simplificada)
-    async function extrairMetricas(blob) {
-      const url = URL.createObjectURL(blob);
-      const arrayBuf = await fetch(url).then(r => r.arrayBuffer());
-      URL.revokeObjectURL(url);
-      
-      const actx = new AudioContext();
-      const dec = await actx.decodeAudioData(arrayBuf);
-      const ch = dec.getChannelData(0);
-      const dur = dec.duration;
-      const win = Math.floor(dec.sampleRate * 0.025);
-      const rms = [];
-      
-      for (let i = 0; i < ch.length; i += win) {
-        let sum = 0;
-        const end = Math.min(i + win, ch.length);
-        for (let j = i; j < end; j++) sum += ch[j] * ch[j];
-        rms.push(Math.sqrt(sum / (end - i)));
-      }
-      
-      const THR = 0.015;
-      let silF = 0;
-      for (let k = 0; k < rms.length; k++) {
-        if (rms[k] < THR) silF++;
-      }
-      
-      const silP = rms.length ? (silF / rms.length) * 100 : 0;
-      const rmM = rms.reduce((a, b) => a + b, 0) / rms.length;
-      const eng = Math.min(100, rmM * 800);
-      
-      await actx.close();
-      
-      return {
-        silence_pct: parseFloat(silP.toFixed(2)),
-        energy_pct: parseFloat(eng.toFixed(2)),
-        duration_sec: parseFloat(dur.toFixed(2))
-      };
-    }
+document.getElementById('btnLimparChat').addEventListener('click', function(){
+  historico=[]; document.getElementById('chatArea').innerHTML='';
+  msg('sistema','Chat limpo.'); log('Chat limpo','ok');
+});
+document.getElementById('btnLimparLog').addEventListener('click', function(){ ELAYON_LAB.clearLog(); });
 
-    // 4. TRANSCRIÇÃO
-    async function testarTranscricaoTexto() {
-      const texto = document.getElementById('textoInput').value.trim();
-      if (!texto) return showStatus('transcricaoResult', '❌ Digite um texto', 'error');
-      
-      apiKey = localStorage.getItem('presenca_test_key');
-      if (!apiKey) return showStatus('transcricaoResult', '❌ Configure chave primeiro', 'error');
-      
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: `Repita exatamente este texto: "${texto}"` }],
-            model: 'llama3-8b-8192'
-          })
-        });
-        
-        const data = await res.json();
-        const resposta = data.choices[0].message.content;
-        showStatus('transcricaoResult', `✅ "${resposta}"`, 'ok');
-        document.getElementById('textoFinal').value = texto;
-        log('Transcrição texto: OK');
-      } catch(e) {
-        showStatus('transcricaoResult', `❌ ${e.message}`, 'error');
-      }
-    }
+document.getElementById('inputTxt').addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); enviar(); } });
+document.getElementById('inputTxt').addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,100)+'px'; });
+document.getElementById('btnEnviar').addEventListener('click', enviar);
 
-    async function testarTranscricaoAudio() {
-      if (!audioBlob) return showStatus('transcricaoResult', '❌ Grave áudio primeiro', 'error');
-      showStatus('transcricaoResult', '⏳ Transcrição áudio não suportada no teste (use Gemini original)', 'warn');
-    }
+async function enviar(){
+  var input=document.getElementById('inputTxt');
+  var texto=input.value.trim();
+  if(!texto||!chaveAtiva) return;
+  input.value=''; input.style.height='auto';
+  document.getElementById('btnEnviar').disabled=true;
+  msg('user',texto);
+  historico.push({role:'user',content:texto});
 
-    // 5. CRS
-    async function testarCRS() {
-      if (!metricas) return showStatus('crsResult', '❌ Extraia métricas primeiro', 'error');
-      
-      try {
-        const res = await fetch('https://nucleo-crs-elayon.onrender.com/api/crs/analisar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(metricas)
-        });
-        
-        if (res.ok) {
-          const crs = await res.json();
-          showStatus('crsResult', `✅ ${crs.analise_sugestiva || 'OK'}`, 'ok');
-          log('CRS: ' + JSON.stringify(crs));
-          document.getElementById('textoFinal').value += `
+  var typing=document.createElement('div'); typing.className='msg ia'; typing.id='typing'; typing.textContent='...';
+  document.getElementById('chatArea').appendChild(typing); document.getElementById('chatArea').scrollTop=99999;
+  setStatus('Aguardando resposta...','busy');
+  log('Enviando para '+provedorAtivo+'...','ok');
 
-CRS: ${crs.analise_sugestiva}`;
-        } else {
-          showStatus('crsResult', '⚠️ CRS offline, mas continua', 'warn');
-        }
-      } catch(e) {
-        showStatus('crsResult', '⚠️ CRS offline, mas continua', 'warn');
-        log('CRS erro: ' + e.message);
-      }
-    }
+  try {
+    var prov=PROVEDORES[provedorAtivo];
+    if(!prov) throw new Error('Provedor desconhecido: '+provedorAtivo);
+    var resposta=await prov.chamar(chaveAtiva, historico, SYSTEM);
+    document.getElementById('typing').remove();
+    msg('ia',resposta);
+    historico.push({role:'assistant',content:resposta});
+    if(historico.length>20) historico=historico.slice(-20);
+    setStatus(provedorAtivo+' respondeu ✓','ok');
+    log('Resposta: "'+resposta.slice(0,60)+(resposta.length>60?'...':'')+'"','ok');
+  } catch(e) {
+    document.getElementById('typing').remove();
+    msg('sistema','Erro: '+e.message);
+    setStatus('Erro: '+e.message.slice(0,80),'err');
+    log('ERRO: '+e.message,'err');
+  }
 
-    // 6. RESPOSTA FINAL
-    async function testarRespostaIA() {
-      const texto = document.getElementById('textoFinal').value.trim();
-      if (!texto) return showStatus('transcricaoResult', '❌ Digite texto final', 'error');
-      
-      apiKey = localStorage.getItem('presenca_test_key');
-      if (!apiKey) return showStatus('transcricaoResult', '❌ Configure chave', 'error');
-      
-      try {
-        showStatus('transcricaoResult', '🤖 Gerando...', 'info');
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messages: [{
-              role: 'system',
-              content: 'Você é uma presença acolhedora. Responda em português brasileiro, caloroso e humano.'
-            }, {
-              role: 'user',
-              content: texto
-            }],
-            model: 'llama3-8b-8192',
-            max_tokens: 500
-          })
-        });
-        
-        const data = await res.json();
-        const resposta = data.choices[0].message.content;
-        document.getElementById('respostaIA').value = resposta;
-        showStatus('transcricaoResult', '✅ Resposta gerada!', 'ok');
-        log('Resposta IA gerada');
-      } catch(e) {
-        showStatus('transcricaoResult', `❌ ${e.message}`, 'error');
-      }
-    }
-
-    async function testarTudo() {
-      log('🚀 Teste completo iniciado');
-      await testarAPI();
-      await testarMicrofone();
-      // resto seria sequencial...
-      log('✅ Teste completo OK!');
-    }
-
-    // BOOT
-    window.onload = () => {
-      apiKey = localStorage.getItem('presenca_test_key');
-      if (apiKey) {
-        document.getElementById('apiKey').value = apiKey;
-        log('Chave carregada do storage');
-      }
-      log('🔧 Teste modular pronto!');
-    };
-  </script>
+  document.getElementById('btnEnviar').disabled=false;
+  input.focus();
+}
+</script>
 </body>
 </html>
