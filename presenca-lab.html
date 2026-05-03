@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Presença Lab · Voz</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .mic-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 16px;
+    }
+    .mic-btn {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .mic-btn:hover { border-color: var(--primary); }
+    .mic-btn.gravando {
+      border-color: #a63c4a;
+      background: #fff0f2;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(166,60,74,0.25); }
+      50%      { box-shadow: 0 0 0 12px rgba(166,60,74,0); }
+    }
+    .mic-btn svg { width: 32px; height: 32px; }
+    .mic-estado {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .mic-estado.gravando { color: #a63c4a; font-weight: bold; }
+    .mic-estado.processando { color: var(--warn); }
+    .mic-estado.ok { color: var(--ok); }
+
+    .transcricao-box {
+      background: #f4fbfc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      color: var(--text);
+      min-height: 48px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .resposta-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 60px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .fluxo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    @media(max-width:480px) {
+      .fluxo-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main class="shell">
+
+  <!-- HEADER -->
+  <section class="card">
+    <h1>Presença Lab · Voz</h1>
+    <p>
+      Laboratório de interação por áudio. Fala → transcrição → CRS → IA calibrada → resposta.<br>
+      Nenhum texto digitado. Só voz.
+    </p>
+    <div class="row">
+      <button class="btn secondary" id="btnLimpar">Limpar</button>
+      <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+      <a class="btn secondary" href="index.html">← Voltar</a>
+    </div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="card">
+    <h2>Configuração</h2>
+    <div class="grid">
+      <div class="field">
+        <span class="label">Chave Gemini (gratuita)</span>
+        <input type="password" id="campoChave" placeholder="AIza..." style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;"/>
+        <span class="label" style="margin-top:6px;">aistudio.google.com/apikey</span>
+      </div>
+      <div class="field">
+        <span class="label">Status dos canais</span>
+        <div class="fluxo-grid">
+          <div><span class="label">Microfone</span><div class="value" id="chkMic">—</div></div>
+          <div><span class="label">Transcrição</span><div class="value" id="chkTranscricao">—</div></div>
+          <div><span class="label">CRS</span><div class="value" id="chkCRS">—</div></div>
+          <div><span class="label">IA</span><div class="value" id="chkIA">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button class="btn" id="btnSalvarChave">Salvar chave</button>
+      <button class="btn secondary" id="btnTestarCanais">Testar canais</button>
+    </div>
+  </section>
+
+  <!-- MIC -->
+  <section class="card">
+    <h2>Captura de voz</h2>
+    <div class="mic-wrap">
+      <button class="mic-btn" id="micBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+      <div class="mic-estado" id="micEstado">Toque para falar</div>
+    </div>
+
+    <div class="field" style="margin-bottom:12px;">
+      <span class="label">Texto transcrito</span>
+      <div class="transcricao-box" id="boxTranscricao">—</div>
+    </div>
+
+    <div class="field">
+      <span class="label">Resposta da IA (calibrada pelo CRS)</span>
+      <div class="resposta-box" id="boxResposta">—</div>
+    </div>
+  </section>
+
+  <!-- DIAGNÓSTICO -->
+  <section class="card">
+    <h2>Diagnóstico CRS</h2>
+    <div class="grid">
+      <div class="field"><span class="label">Estado detectado</span><div class="value" id="crsEstado">—</div></div>
+      <div class="field"><span class="label">Instrução à IA</span><div class="value" id="crsSugestao">—</div></div>
+      <div class="field"><span class="label">Silêncio</span><div class="value" id="crsSilencio">—</div></div>
+      <div class="field"><span class="label">Energia</span><div class="value" id="crsEnergia">—</div></div>
+      <div class="field"><span class="label">Último erro</span><div class="value err" id="ultimoErro">nenhum</div></div>
+      <div class="field"><span class="label">Último evento</span><div class="value" id="ultimoEvento">nenhum</div></div>
+    </div>
+  </section>
+
+  <!-- LOG -->
+  <section class="card">
+    <h2>Log técnico</h2>
+    <div class="log" id="logBox"></div>
+  </section>
+
+</main>
+
+<script src="js/base.js"></script>
+<script>
+/* ════════════════════════════════════
+   CONFIG
+════════════════════════════════════ */
+var GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+var CRS_ENDPOINT    = 'https://nucleo-crs-elayon.onrender.com/api/crs/analisar';
+var geminiChave     = '';
+var crsToken        = null; // token Supabase se disponível
+
+/* ════════════════════════════════════
+   BOOT
+════════════════════════════════════ */
+(function boot() {
+  // Carrega chave salva
+  geminiChave = localStorage.getItem('lab_gemini_key') || localStorage.getItem('elayon_claude_key') || '';
+  if (geminiChave) document.getElementById('campoChave').value = geminiChave;
+
+  // Tenta pegar token do Supabase salvo pelo presenca
+  var cfg = localStorage.getItem('elayon_ia_config');
+  if (cfg) { try { var p = JSON.parse(cfg); geminiChave = geminiChave || p.chave || ''; } catch(e) {} }
+
+  log('Sistema pronto · Presença Lab V1', 'ok');
+  if (geminiChave) log('Chave Gemini carregada do storage', 'ok');
+  else log('Insira a chave Gemini para começar', 'warn');
+})();
+
+/* ════════════════════════════════════
+   HELPERS
+════════════════════════════════════ */
+function log(msg, type) { ELAYON_LAB.appendLog(msg, type || 'ok'); }
+function set(id, val) { ELAYON_LAB.setValue(id, val); }
+function setEvento(msg) { set('ultimoEvento', msg); }
+function setErro(msg) { set('ultimoErro', msg); log('ERRO: ' + msg, 'err'); }
+
+/* ════════════════════════════════════
+   SALVAR CHAVE
+════════════════════════════════════ */
+document.getElementById('btnSalvarChave').addEventListener('click', function() {
+  var chave = document.getElementById('campoChave').value.trim();
+  if (!chave) { setErro('Chave vazia'); return; }
+  geminiChave = chave;
+  localStorage.setItem('lab_gemini_key', chave);
+  log('Chave Gemini salva', 'ok');
+  set('chkIA', '✓ configurada');
+});
+
+/* ════════════════════════════════════
+   TESTAR CANAIS
+════════════════════════════════════ */
+document.getElementById('btnTestarCanais').addEventListener('click', async function() {
+  log('Testando canais...', 'ok');
+
+  // Microfone
+  try {
+    var s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    s.getTracks().forEach(function(t) { t.stop(); });
+    set('chkMic', '✓ ok'); log('Microfone: ok', 'ok');
+  } catch(e) { set('chkMic', '✗ bloqueado'); log('Microfone: bloqueado', 'err'); }
+
+  // Chave Gemini
+  if (geminiChave) { set('chkIA', '✓ configurada'); set('chkTranscricao', '✓ pronto'); }
+  else { set('chkIA', '✗ sem chave'); set('chkTranscricao', '✗ sem chave'); log('Chave Gemini ausente', 'warn'); }
+
+  // CRS (ping)
+  try {
+    var r = await fetch('https://nucleo-crs-elayon.onrender.com/health');
+    var d = await r.json();
+    if (d.ok) { set('chkCRS', '✓ online'); log('CRS: online', 'ok'); }
+    else { set('chkCRS', '? resposta estranha'); }
+  } catch(e) { set('chkCRS', '✗ offline'); log('CRS: offline ou dormindo', 'warn'); }
+});
+
+/* ════════════════════════════════════
+   MICROFONE — CAPTURA
+════════════════════════════════════ */
+var micGravando = false;
+var micRec = null, micStream = null, micChunks = [];
+var micBtn = document.getElementById('micBtn');
+var micEstado = document.getElementById('micEstado');
+
+micBtn.addEventListener('click', function() {
+  if (micGravando) pararMic();
+  else iniciarMic();
+});
+
+function iniciarMic() {
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(s) {
+    micStream = s; micChunks = [];
+    micRec = new MediaRecorder(s);
+    micRec.ondataavailable = function(ev) { if (ev.data.size > 0) micChunks.push(ev.data); };
+    micRec.start(100);
+    micGravando = true;
+    micBtn.classList.add('gravando');
+    micEstado.textContent = 'Gravando... toque para encerrar';
+    micEstado.className = 'mic-estado gravando';
+    log('Gravação iniciada', 'ok');
+    set('ultimoEvento', 'gravação iniciada');
+  }).catch(function(e) { setErro('Microfone: ' + e.message); });
+}
+
+function pararMic() {
+  if (!micRec) return;
+  micGravando = false;
+  micBtn.classList.remove('gravando');
+  micEstado.textContent = 'Processando...';
+  micEstado.className = 'mic-estado processando';
+
+  micRec.onstop = async function() {
+    var blob = new Blob(micChunks, { type: 'audio/webm' });
+    log('Áudio capturado · ' + Math.round(blob.size / 1024) + ' KB', 'ok');
+    set('ultimoEvento', 'áudio capturado');
+    await processarAudio(blob);
+  };
+
+  micRec.stop();
+  micStream.getTracks().forEach(function(t) { t.stop(); });
+}
+
+/* ════════════════════════════════════
+   FLUXO PRINCIPAL
+   1. Extrai métricas (Web Audio)
+   2. Transcreve com Gemini
+   3. Manda métricas pro CRS
+   4. Soma texto + relatório CRS
+   5. Gemini responde calibrado
+════════════════════════════════════ */
+async function processarAudio(blob) {
+  if (!geminiChave) { setErro('Chave Gemini não configurada'); micEstado.textContent = 'Erro — sem chave'; micEstado.className = 'mic-estado'; return; }
+
+  try {
+    // PASSO 1 — Extrai métricas localmente
+    log('Extraindo métricas de áudio...', 'ok');
+    var metricas = await extrairMetricas(blob);
+    log('Métricas: silêncio ' + metricas.silence_pct + '% · energia ' + metricas.energy_pct + '%', 'ok');
+    set('crsSilencio', metricas.silence_pct + '%');
+    set('crsEnergia', metricas.energy_pct + '%');
+
+    // PASSO 2 — Transcreve com Gemini (audio → texto)
+    log('Transcrevendo com Gemini...', 'ok');
+    set('chkTranscricao', 'transcrevendo...');
+    var texto = await transcreverComGemini(blob);
+    log('Transcrição: "' + texto.slice(0, 60) + (texto.length > 60 ? '...' : '') + '"', 'ok');
+    document.getElementById('boxTranscricao').textContent = texto || '(sem fala detectada)';
+    set('chkTranscricao', '✓ ok');
+    set('ultimoEvento', 'transcrição concluída');
+
+    // PASSO 3 — Manda métricas pro CRS
+    log('Enviando ao CRS...', 'ok');
+    set('chkCRS', 'analisando...');
+    var relatorio = await enviarCRS(metricas);
+    if (relatorio && relatorio.ok) {
+      log('CRS: ' + relatorio.analise_sugestiva, 'ok');
+      set('crsEstado', relatorio.analise_sugestiva || '—');
+      set('crsSugestao', relatorio.sugestao_ia || '—');
+      set('chkCRS', '✓ ok');
+    } else {
+      log('CRS sem resposta — continuando sem calibração', 'warn');
+      set('chkCRS', '? sem resposta');
+    }
+
+    // PASSO 4 — Gemini responde com contexto
+    if (!texto || texto.trim() === '') {
+      micEstado.textContent = 'Sem fala detectada';
+      micEstado.className = 'mic-estado';
+      log('Nenhum texto transcrito — resposta cancelada', 'warn');
+      return;
+    }
+
+    log('Gerando resposta calibrada...', 'ok');
+    var resposta = await responderComGemini(texto, relatorio);
+    document.getElementById('boxResposta').textContent = resposta;
+    log('Resposta gerada', 'ok');
+    set('ultimoEvento', 'resposta gerada');
+    micEstado.textContent = 'Pronto — toque para falar novamente';
+    micEstado.className = 'mic-estado ok';
+
+  } catch(e) {
+    setErro(e.message);
+    micEstado.textContent = 'Erro — veja o log';
+    micEstado.className = 'mic-estado';
+  }
+}
+
+/* ════════════════════════════════════
+   TRANSCRIÇÃO — Gemini multimodal
+════════════════════════════════════ */
+async function transcreverComGemini(blob) {
+  var base64 = await blobToBase64(blob);
+  var payload = {
+    contents: [{
+      parts: [
+        { text: 'Transcreva exatamente o que foi dito neste áudio em português brasileiro. Retorne apenas o texto transcrito, sem comentários.' },
+        { inline_data: { mime_type: 'audio/webm', data: base64 } }
+      ]
+    }]
+  };
+  var res = await fetch(GEMINI_ENDPOINT + '?key=' + geminiChave, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) { var e = await res.text(); throw new Error('Gemini transcrição ' + res.status + ': ' + e.slice(0, 100)); }
+  var data = await res.json();
+  return data.candidates && data.candidates[0] ? data.candidates[0].content.parts[0].text.trim() : '';
+}
+
+/* ════════════════════════════════════
+   RESPOSTA — Gemini calibrada pelo CRS
+════════════════════════════════════ */
+async function responderComGemini(texto, relatorio) {
+  var system = 'Você é uma presença acolhedora. Responda em português brasileiro. '
+    + 'Seja direto, caloroso e humano. Ajude o emissor a se ver com clareza e amor. '
+    + 'Nunca mencione CRS, calibração ou análise de áudio.';
+
+  if (relatorio && relatorio.ok && relatorio.analise_sugestiva) {
+    system += '\n\n[LEITURA INTERNA — NÃO REVELAR]: Estado do emissor: '
+      + relatorio.analise_sugestiva + '. Instrução: ' + (relatorio.sugestao_ia || '');
+  }
+
+  var payload = {
+    system_instruction: { parts: [{ text: system }] },
+    contents: [{ role: 'user', parts: [{ text: texto }] }],
+    generationConfig: { maxOutputTokens: 600 }
+  };
+
+  var res = await fetch(GEMINI_ENDPOINT + '?key=' + geminiChave, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) { var e = await res.text(); throw new Error('Gemini resposta ' + res.status + ': ' + e.slice(0, 100)); }
+  var data = await res.json();
+  return data.candidates && data.candidates[0] ? data.candidates[0].content.parts[0].text.trim() : '—';
+}
+
+/* ════════════════════════════════════
+   CRS
+════════════════════════════════════ */
+async function enviarCRS(metricas) {
+  try {
+    var headers = { 'Content-Type': 'application/json' };
+    if (crsToken) headers['Authorization'] = 'Bearer ' + crsToken;
+    var res = await fetch(CRS_ENDPOINT, { method: 'POST', headers: headers, body: JSON.stringify(metricas) });
+    return res.ok ? await res.json() : null;
+  } catch(e) { return null; }
+}
+
+/* ════════════════════════════════════
+   EXTRAÇÃO DE MÉTRICAS
+════════════════════════════════════ */
+async function extrairMetricas(blob) {
+  var url = URL.createObjectURL(blob);
+  var arrayBuf = await fetch(url).then(function(r) { return r.arrayBuffer(); });
+  URL.revokeObjectURL(url);
+  var actx = new (window.AudioContext || window.webkitAudioContext)();
+  var dec; try { dec = await actx.decodeAudioData(arrayBuf); } catch(e) { await actx.close(); return metricasNulas(); }
+  var ch = dec.getChannelData(0), dur = dec.duration, win = Math.floor(dec.sampleRate * 0.025), rms = [];
+  for (var i = 0; i < ch.length; i += win) {
+    var sum = 0, end = Math.min(i+win, ch.length);
+    for (var j = i; j < end; j++) sum += ch[j]*ch[j];
+    rms.push(Math.sqrt(sum/(end-i)));
+  }
+  var THR=0.015, MF=8, silF=0, pC=0, pLens=[], inP=false, pLen=0;
+  for (var k=0; k<rms.length; k++) {
+    if (rms[k]<THR) { silF++; inP ? pLen++ : (inP=true, pLen=1); }
+    else { if(inP && pLen>=MF){ pC++; pLens.push(pLen*25); } inP=false; pLen=0; }
+  }
+  var silP = rms.length ? (silF/rms.length)*100 : 0;
+  var meanP = pLens.length ? pLens.reduce(function(a,b){return a+b;},0)/pLens.length : 0;
+  var rmM = rms.reduce(function(a,b){return a+b;},0)/rms.length;
+  var eng = Math.min(100, rmM*800);
+  var vari = rms.reduce(function(a,v){return a+Math.pow(v-rmM,2);},0)/rms.length;
+  var std = Math.sqrt(vari), osc = Math.min(100, std*1200), cont = Math.max(0, 100-silP-osc*0.3);
+  var noise = Math.min(40, std*600), stab = Math.max(0, 100-osc*0.6-noise*0.4);
+  await actx.close();
+  return {
+    duration_sec:    parseFloat(dur.toFixed(2)),
+    silence_pct:     parseFloat(silP.toFixed(2)),
+    pause_count:     pC,
+    mean_pause_ms:   parseFloat(meanP.toFixed(2)),
+    oscillation_pct: parseFloat(osc.toFixed(2)),
+    continuity_pct:  parseFloat(cont.toFixed(2)),
+    energy_pct:      parseFloat(eng.toFixed(2)),
+    context:         'presenca_lab_' + new Date().toISOString(),
+    spectrum_snapshot: { graves:0, medios:0, agudos:0, ruido:parseFloat(noise.toFixed(2)), estabilidade:parseFloat(stab.toFixed(2)) }
+  };
+}
+
+function metricasNulas() {
+  return { duration_sec:0, silence_pct:0, pause_count:0, mean_pause_ms:0, oscillation_pct:0, continuity_pct:0, energy_pct:0, context:'lab_nulo', spectrum_snapshot:{ graves:0, medios:0, agudos:0, ruido:0, estabilidade:0 } };
+}
+
+/* ════════════════════════════════════
+   UTILIDADES
+════════════════════════════════════ */
+function blobToBase64(blob) {
+  return new Promise(function(res) {
+    var r = new FileReader();
+    r.onload = function(e) { res(e.target.result.split(',')[1]); };
+    r.readAsDataURL(blob);
+  });
+}
+
+/* ════════════════════════════════════
+   BOTÕES AUXILIARES
+════════════════════════════════════ */
+document.getElementById('btnLimpar').addEventListener('click', function() {
+  document.getElementById('boxTranscricao').textContent = '—';
+  document.getElementById('boxResposta').textContent = '—';
+  set('crsEstado', '—'); set('crsSugestao', '—');
+  set('crsSilencio', '—'); set('crsEnergia', '—');
+  set('ultimoErro', 'nenhum'); set('ultimoEvento', 'nenhum');
+  micEstado.textContent = 'Toque para falar';
+  micEstado.className = 'mic-estado';
+  log('Tela limpa', 'ok');
+});
+
+document.getElementById('btnLimparLog').addEventListener('click', function() { ELAYON_LAB.clearLog(); });
+</script>
+</body>
+</html>
