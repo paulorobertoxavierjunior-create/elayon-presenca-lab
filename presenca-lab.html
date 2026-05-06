@@ -1,228 +1,248 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Presença Lab · Teste API</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elayon | Presença Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@300;400;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
   <style>
-    .chat-area {
-      min-height: 300px; max-height: 420px; overflow-y: auto;
-      display: flex; flex-direction: column; gap: 10px;
-      padding: 4px 0; margin-bottom: 14px;
+    :root {
+      --bg: #0f1b1d;
+      --surface: #182c2f;
+      --border: #2d4a4e;
+      --cyan: #3ecfcf;
+      --cglow: rgba(62,207,207,0.15);
+      --teal: #2a9d8f;
+      --dark: #0a2a2f;
+      --muted: #88a8ad;
+      --text: #f0f9fa;
+      --red: #ef4444;
+      --mono: 'Share Tech Mono', monospace;
+      --sans: 'Syne', sans-serif;
     }
-    .msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6; word-break: break-word; }
-    .msg.user    { align-self: flex-end; background: var(--primary); color: #fff; border-radius: 14px 14px 4px 14px; }
-    .msg.ia      { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; color: var(--text); }
-    .msg.sistema { align-self: center; background: #f4fbfc; border: 1px solid var(--line); color: var(--muted); font-size: 12px; border-radius: 10px; padding: 6px 12px; }
-    .input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .input-txt { flex: 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; resize: none; outline: none; font-family: Arial, sans-serif; max-height: 100px; }
-    .input-txt:focus { border-color: var(--primary); }
-    .btn-enviar { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .btn-enviar svg { width: 18px; height: 18px; fill: #fff; }
-    .btn-enviar:disabled { background: var(--line); cursor: not-allowed; }
-    .status-linha { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; min-height: 22px; }
-    .status-linha.ok  { color: var(--ok); font-weight: bold; }
-    .status-linha.err { color: var(--err); font-weight: bold; }
-    .status-linha.busy { color: var(--warn); }
-    input.campo, select.campo {
-      width: 100%; padding: 8px 10px; border: 1px solid var(--line);
-      border-radius: 8px; font-size: 13px; background: #fff; margin-bottom: 8px;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--sans);
+      min-height: 100vh; padding: 20px; max-width: 1200px; margin: 0 auto;
     }
-    .nota-prov { font-size: 11px; color: var(--muted); margin-bottom: 12px; display: block; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 20px; border-bottom: 2px solid var(--border); margin-bottom: 24px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo h1 { font-family: var(--mono); font-size: 16px; color: var(--cyan); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    }
+    .card h2 {
+      font-family: var(--mono); font-size: 12px; color: var(--cyan);
+      margin-bottom: 16px; letter-spacing: 2px;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:768px) { .grid { grid-template-columns: 1fr; } }
+
+    /* CONFIG IA */
+    .config-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    input, textarea {
+      flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 12px;
+    }
+    button {
+      padding: 12px 20px; border-radius: 8px; border: none;
+      background: var(--cyan); color: var(--dark); font-family: var(--mono);
+      font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { background: var(--border); cursor: not-allowed; }
+
+    /* CHAT */
+    .chat-box {
+      height: 350px; overflow-y: auto; padding: 12px;
+      background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .msg { margin-bottom: 12px; line-height: 1.5; }
+    .msg.usuario { color: var(--cyan); }
+    .msg.ia { color: var(--text); }
+    .msg small { color: var(--muted); font-size: 10px; display: block; margin-top: 2px; }
+
+    /* MÉTRICAS */
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .metric-card {
+      background: var(--bg); padding: 12px; border-radius: 8px; text-align: center;
+      border: 1px solid var(--border);
+    }
+    .metric-val { font-size: 20px; font-weight: 700; color: var(--cyan); margin: 4px 0; }
+    .metric-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+    /* GRÁFICOS */
+    .chart-container { height: 220px; margin-top: 16px; }
+
+    /* CALIBRAÇÕES HISTÓRICO */
+    .calib-item {
+      padding: 10px; border-radius: 8px; background: var(--bg);
+      border: 1px solid var(--border); margin-bottom: 8px; font-size: 12px;
+    }
+    .calib-item strong { color: var(--cyan); }
   </style>
 </head>
 <body>
-<main class="shell">
 
-  <section class="card">
-    <h1>Presença Lab · Teste API</h1>
-    <p>Configure a chave, escolha o provedor e mande um "Olá". Se a IA responder de forma natural — está conectada.</p>
-    <div class="row"><a class="btn secondary" href="index.html">← Voltar</a></div>
-  </section>
+<div class="header">
+  <div class="logo">
+    <span style="font-size:24px;">⚡</span>
+    <h1>ELAYON PRESENÇA LAB</h1>
+  </div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--muted)">
+    Últimas 3 calibrações armazenadas
+  </div>
+</div>
 
-  <section class="card">
-    <h2>Configuração</h2>
-    <span class="label">Provedor</span>
-    <select class="campo" id="provedor">
-      <option value="gemini">Gemini — Google (Gratuito)</option>
-      <option value="groq">Groq — LLaMA (Gratuito)</option>
-      <option value="mistral">Mistral AI (Gratuito)</option>
-      <option value="claude">Claude — Anthropic (Pago)</option>
-      <option value="openai">GPT — OpenAI (Pago)</option>
-    </select>
-    <span class="nota-prov" id="notaProv"></span>
-    <span class="label">Chave da API</span>
-    <input type="password" class="campo" id="campoChave" placeholder="Cole sua chave aqui..."/>
-    <div class="row">
-      <button class="btn" id="btnSalvar">Salvar e conectar</button>
-      <button class="btn secondary" id="btnLimparChat">Limpar chat</button>
+<div class="grid">
+  <!-- COLUNA ESQUERDA -->
+  <div>
+    <!-- CONFIGURAÇÃO IA -->
+    <div class="card">
+      <h2>CONFIGURAÇÃO DA IA</h2>
+      <div class="config-row">
+        <input type="password" id="grokKey" placeholder="Cole aqui sua chave da Grok API" value="">
+        <button onclick="salvarChave()">Salvar</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted)">Chave salva localmente no navegador</p>
     </div>
-    <div class="status-linha" id="statusConexao">Aguardando configuração</div>
-  </section>
 
-  <section class="card">
-    <h2>Chat</h2>
-    <div class="chat-area" id="chatArea"></div>
-    <div class="input-row">
-      <textarea class="input-txt" id="inputTxt" rows="1" placeholder="Digite e pressione Enter..."></textarea>
-      <button class="btn-enviar" id="btnEnviar" disabled>
-        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-      </button>
+    <!-- MÉTRICAS DE ÁUDIO EM TEMPO REAL -->
+    <div class="card">
+      <h2>MÉTRICAS DE ÁUDIO</h2>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-label">RITMO</div>
+          <div class="metric-val" id="metRitmo">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">SILÊNCIO %</div>
+          <div class="metric-val" id="metSilencio">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">HESITAÇÕES</div>
+          <div class="metric-val" id="metHesitacoes">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">ENERGIA</div>
+          <div class="metric-val" id="metEnergia">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">ESTABILIDADE</div>
+          <div class="metric-val" id="metEstabilidade">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">DURAÇÃO</div>
+          <div class="metric-val" id="metDuracao">0s</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="metricasChart"></canvas>
+      </div>
     </div>
-  </section>
 
-  <section class="card">
-    <h2>Log técnico</h2>
-    <div class="log" id="logBox"></div>
-    <div class="row" style="margin-top:10px;">
-      <button class="btn secondary" id="btnLimparLog">Limpar log</button>
+    <!-- HISTÓRICO DE CALIBRAÇÕES -->
+    <div class="card">
+      <h2>ÚLTIMAS CALIBRAÇÕES</h2>
+      <div id="listaCalibracoes">
+        <p style="color:var(--muted);font-size:12px;">Nenhuma calibração registrada ainda</p>
+      </div>
     </div>
-  </section>
+  </div>
 
-</main>
-<script src="js/base.js"></script>
+  <!-- COLUNA DIREITA -->
+  <div>
+    <!-- CHAT INTELIGENTE -->
+    <div class="card">
+      <h2>CHAT PRESENÇA</h2>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="config-row">
+        <textarea id="inputChat" placeholder="Digite sua mensagem ou análise..." rows="2"></textarea>
+        <button onclick="enviarMensagem()" id="btnEnviar">Enviar</button>
+      </div>
+    </div>
+
+    <!-- RESULTADO DA ANÁLISE COMPLETA -->
+    <div class="card">
+      <h2>ANÁLISE GERADA</h2>
+      <div id="resultadoAnalise" style="line-height:1.7;font-size:14px;">
+        <p style="color:var(--muted);">Realize uma análise para ver o resultado aqui</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-var PROVEDORES = {
-  gemini: {
-    nota: 'Gratuito · aistudio.google.com/apikey · chave começa com AIza...',
-    chamar: async function(chave, hist, sys) {
-      var contents = hist.map(function(m) { return { role: m.role==='assistant'?'model':'user', parts:[{text:m.content}] }; });
-      var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+chave, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ system_instruction:{parts:[{text:sys}]}, contents:contents, generationConfig:{maxOutputTokens:600,temperature:0.8} })
-      });
-      if (!res.ok) { var e=await res.text(); throw new Error('Gemini '+res.status+': '+e.slice(0,120)); }
-      var d=await res.json(); return d.candidates[0].content.parts[0].text.trim();
-    }
-  },
-  groq: {
-    nota: 'Gratuito · console.groq.com · chave começa com gsk_...',
-    chamar: async function(chave, hist, sys) {
-      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
-        body: JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
-      });
-      if (!res.ok) { var e=await res.text(); throw new Error('Groq '+res.status+': '+e.slice(0,120)); }
-      var d=await res.json(); return d.choices[0].message.content.trim();
-    }
-  },
-  mistral: {
-    nota: 'Gratuito · console.mistral.ai',
-    chamar: async function(chave, hist, sys) {
-      var res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
-        body: JSON.stringify({ model:'mistral-small-latest', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
-      });
-      if (!res.ok) { var e=await res.text(); throw new Error('Mistral '+res.status+': '+e.slice(0,120)); }
-      var d=await res.json(); return d.choices[0].message.content.trim();
-    }
-  },
-  claude: {
-    nota: 'Pago · console.anthropic.com · chave começa com sk-ant-...',
-    chamar: async function(chave, hist, sys) {
-      var res = await fetch('https://api.anthropic.com/v1/messages', {
-        method:'POST', headers:{'Content-Type':'application/json','x-api-key':chave,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:600, system:sys, messages:hist })
-      });
-      if (!res.ok) { var e=await res.text(); throw new Error('Claude '+res.status+': '+e.slice(0,120)); }
-      var d=await res.json(); return d.content[0].text.trim();
-    }
-  },
-  openai: {
-    nota: 'Pago · platform.openai.com/api-keys · chave começa com sk-...',
-    chamar: async function(chave, hist, sys) {
-      var res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+chave},
-        body: JSON.stringify({ model:'gpt-4o-mini', max_tokens:600, messages:[{role:'system',content:sys}].concat(hist) })
-      });
-      if (!res.ok) { var e=await res.text(); throw new Error('OpenAI '+res.status+': '+e.slice(0,120)); }
-      var d=await res.json(); return d.choices[0].message.content.trim();
-    }
-  }
-};
+/* ══════════════════════════════════════════════════════════
+   CONFIGURAÇÕES GERAIS
+══════════════════════════════════════════════════════════ */
+const GROK_API_URL = "https://api.x.ai/v1/chat/completions";
+const CRS_ENDPOINT = "https://nucleo-crs-elayon.onrender.com/api/crs/analisar";
+let GROK_API_KEY = localStorage.getItem("elayon_grok_key") || "";
+let calibracoes = JSON.parse(localStorage.getItem("elayon_calibracoes")) || [];
+let chartInstance = null;
 
-var chaveAtiva='', provedorAtivo='gemini', historico=[];
-var SYSTEM='Você é uma presença acolhedora. Responda em português brasileiro de forma natural, direta e calorosa.';
-
-(function boot(){
-  chaveAtiva = localStorage.getItem('lab_gemini_key') || '';
-  var cfg = localStorage.getItem('elayon_ia_config');
-  if (cfg) { try { var p=JSON.parse(cfg); chaveAtiva=chaveAtiva||p.chave||''; provedorAtivo=p.provedor||'gemini'; } catch(e){} }
-  if (chaveAtiva) { document.getElementById('campoChave').value=chaveAtiva; document.getElementById('btnEnviar').disabled=false; setStatus('Chave carregada do storage. Pronto.','ok'); log('Chave carregada automaticamente','ok'); }
-  document.getElementById('provedor').value = provedorAtivo;
-  atualizarNota();
-  msg('sistema','Configure a chave e mande um "Olá" para testar a conexão.');
-})();
-
-function log(m,t){ ELAYON_LAB.appendLog(m,t||'ok'); }
-function setStatus(m,t){ var el=document.getElementById('statusConexao'); el.textContent=m; el.className='status-linha'+(t?' '+t:''); }
-function atualizarNota(){ var p=document.getElementById('provedor').value; document.getElementById('notaProv').textContent=PROVEDORES[p]?PROVEDORES[p].nota:''; }
-
-function msg(role, texto){
-  var area=document.getElementById('chatArea');
-  var div=document.createElement('div'); div.className='msg '+role; div.textContent=texto;
-  area.appendChild(div); area.scrollTop=area.scrollHeight;
-}
-
-document.getElementById('provedor').addEventListener('change', atualizarNota);
-
-document.getElementById('btnSalvar').addEventListener('click', function(){
-  var chave=document.getElementById('campoChave').value.trim();
-  var prov=document.getElementById('provedor').value;
-  if (!chave){ setStatus('Chave vazia.','err'); return; }
-  chaveAtiva=chave; provedorAtivo=prov;
-  localStorage.setItem('lab_gemini_key', chave);
-  localStorage.setItem('elayon_ia_config', JSON.stringify({chave:chave,provedor:prov,enabled:true,endpoint:''}));
-  document.getElementById('btnEnviar').disabled=false;
-  setStatus('Chave salva · '+prov+' · Mande um "Olá"','ok');
-  log('Chave salva · provedor: '+prov,'ok');
+// Inicializa tudo ao carregar
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('grokKey').value = GROK_API_KEY;
+  atualizarListaCalibracoes();
+  inicializarGrafico();
 });
 
-document.getElementById('btnLimparChat').addEventListener('click', function(){
-  historico=[]; document.getElementById('chatArea').innerHTML='';
-  msg('sistema','Chat limpo.'); log('Chat limpo','ok');
-});
-document.getElementById('btnLimparLog').addEventListener('click', function(){ ELAYON_LAB.clearLog(); });
-
-document.getElementById('inputTxt').addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); enviar(); } });
-document.getElementById('inputTxt').addEventListener('input', function(){ this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,100)+'px'; });
-document.getElementById('btnEnviar').addEventListener('click', enviar);
-
-async function enviar(){
-  var input=document.getElementById('inputTxt');
-  var texto=input.value.trim();
-  if(!texto||!chaveAtiva) return;
-  input.value=''; input.style.height='auto';
-  document.getElementById('btnEnviar').disabled=true;
-  msg('user',texto);
-  historico.push({role:'user',content:texto});
-
-  var typing=document.createElement('div'); typing.className='msg ia'; typing.id='typing'; typing.textContent='...';
-  document.getElementById('chatArea').appendChild(typing); document.getElementById('chatArea').scrollTop=99999;
-  setStatus('Aguardando resposta...','busy');
-  log('Enviando para '+provedorAtivo+'...','ok');
-
-  try {
-    var prov=PROVEDORES[provedorAtivo];
-    if(!prov) throw new Error('Provedor desconhecido: '+provedorAtivo);
-    var resposta=await prov.chamar(chaveAtiva, historico, SYSTEM);
-    document.getElementById('typing').remove();
-    msg('ia',resposta);
-    historico.push({role:'assistant',content:resposta});
-    if(historico.length>20) historico=historico.slice(-20);
-    setStatus(provedorAtivo+' respondeu ✓','ok');
-    log('Resposta: "'+resposta.slice(0,60)+(resposta.length>60?'...':'')+'"','ok');
-  } catch(e) {
-    document.getElementById('typing').remove();
-    msg('sistema','Erro: '+e.message);
-    setStatus('Erro: '+e.message.slice(0,80),'err');
-    log('ERRO: '+e.message,'err');
-  }
-
-  document.getElementById('btnEnviar').disabled=false;
-  input.focus();
+/* ══════════════════════════════════════════════════════════
+   GERENCIAMENTO DE CHAVE
+══════════════════════════════════════════════════════════ */
+function salvarChave() {
+  const chave = document.getElementById('grokKey').value.trim();
+  if(!chave) return alert("Insira uma chave válida");
+  GROK_API_KEY = chave;
+  localStorage.setItem("elayon_grok_key", chave);
+  alert("Chave salva com sucesso!");
 }
-</script>
-</body>
-</html>
+
+/* ══════════════════════════════════════════════════════════
+   FUNÇÕES DE PROCESSAMENTO DE ÁUDIO (já que você já tem essas funções)
+══════════════════════════════════════════════════════════ */
+function vetorNulo() { return { duration_sec:0, silence_pct:0, pause_count:0, mean_pause_ms:0, oscillation_pct:0, continuity_pct:0, energy_pct:0, spectrum_snapshot:{ graves:0, medios:0, agudos:0, ruido:0, estabilidade:0 } }; }
+
+async function extrairMetricasDeAudio(dataUrl, label) {
+  var buf = await base64ToArrayBuffer(dataUrl);
+  var actx = new (window.AudioContext || window.webkitAudioContext)();
+  var dec; try { dec = await actx.decodeAudioData(buf); } catch(e) { await actx.close(); return vetorNulo(); }
+  var ch = dec.getChannelData(0), dur = dec.duration, win = Math.floor(dec.sampleRate * 0.025), rms = [];
+  for (var i = 0; i < ch.length; i += win) { var sum = 0, end = Math.min(i+win, ch.length); for (var j = i; j < end; j++) sum += ch[j]*ch[j]; rms.push(Math.sqrt(sum/(end-i))); }
+  var THR=0.015, MF=Math.floor(0.2/0.025), silF=0, pC=0, pLens=[], inP=false, pLen=0;
+  for (var k=0; k<rms.length; k++) { if (rms[k]<THR) { silF++; inP ? pLen++ : (inP=true, pLen=1); } else { if(inP && pLen>=MF){ pC++; pLens.push(pLen*25); } inP=false; pLen=0; } }
+  var silP = rms.length ? (silF/rms.length)*100 : 0, meanP = pLens.length ? pLens.reduce(function(a,b){return a+b;},0)/pLens.length : 0;
+  var rmM = rms.reduce(function(a,b){return a+b;},0)/rms.length, eng = Math.min(100, rmM*800);
+  var vari = rms.reduce(function(a,v){return a+Math.pow(v-rmM,2);},0)/rms.length, std = Math.sqrt(vari);
+  var osc = Math.min(100, std*1200), cont = Math.max(0, 100-silP-osc*0.3);
+  var mid=Math.floor(ch.length/2), seg=ch.slice(mid,mid+2048), gr=0, me=0, ag=0;
+  for (var s=0; s<seg.length; s++) { var nv=Math.abs(seg[s]); if(s<170) gr+=nv; else if(s<1024) me+=nv; else ag+=nv; }
+  var tot=gr+me+ag||1; gr=(gr/tot)*100; me=(me/tot)*100; ag=(ag/tot)*100;
+  var noise=Math.min(40,std*600), stab=Math.max(0,100-osc*0.6-noise*0.4);
+  await actx.close();
+  return { duration_sec:parseFloat(dur.toFixed(2)), silence_pct:parseFloat(silP.toFixed(2)), pause_count:pC, mean_pause_ms:parseFloat(meanP.toFixed(2)), oscillation_pct:parseFloat(osc.toFixed(2)), continuity_pct:parseFloat(cont.toFixed(2)), energy_pct:parseFloat(eng.toFixed(2)), spectrum_snapshot:{ graves:parseFloat(gr.toFixed(2)), medios:parseFloat(me.toFixed(2)), agudos:parseFloat(ag.toFixed(2)), ruido:parseFloat(noise.toFixed(2)), estabilidade:parseFloat(stab.toFixed(2)) } };
+}
+
+function base64ToArrayBuffer(dataUrl) {
+  var b64 = dataUrl.split(',')[1], bin = atob(b64), buf = new ArrayBuffer(bin.length), view = new Uint8Array(buf);
+  for (var i = 0; i < bin.length; i++) view[i] = bin.charCodeAt(i); return buf;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ATUALIZAÇÃO DE INTERFACE
+══════════════════════════════════════════════════════════ */
+function atualizarMetricasTela(met) {
+  document.getElementById('metRitmo').textContent = Math.round(met.oscillation_pct);
+  document.getElementById('metSilencio').textContent = Math.round(met.silence_pct);
+  document.getElementById('metHesitacoes').textContent = met.pause_count;
+  document.getElementById('metEnergia').textContent = Math.round(met.energy_pct);
+  document.getElementById('metEstabilidade').textContent = Math.round(met.spectrum_snapshot.estabilidade);
+  document.getElementById('metDuracao').textContent = met.duration_sec
