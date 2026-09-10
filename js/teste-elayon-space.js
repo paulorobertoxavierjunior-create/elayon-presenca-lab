@@ -371,6 +371,5 @@
     renderIssues();
     document.getElementById("btnRun")?.addEventListener("click", run);
     document.getElementById("btnClear")?.addEventListener("click", LAB.clearLog);
-    run();
   });
 })();
