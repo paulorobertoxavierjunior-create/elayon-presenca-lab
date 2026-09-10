@@ -1,19 +1,17 @@
 # Elayon Space — Diagnóstico Backend (2026-09-10 03:26 UTC)
 
 ## Status GitHub Pages
-- [x] `index.html` → presente na `main`; deploy Pages concluído com sucesso no run `34397566028` em `2026-09-09T19:52:20Z`
-- [x] `acesso.html` → presente na `main`; commit relevante `291dbc491ac94dad9e0577a16e670e5f64acaedc` (`2026-03-31T03:02:15Z`)
-- [x] `painel.html` → presente na `main`; commit relevante `1128ed31a2f40395fd2cbc2c96b6fe551d1aef2d` (`2026-03-31T03:45:29Z`)
-- [ ] `confirmacao.html` → ausente da `main`; URL publicada tende a retornar `404`
-- [ ] `index-check.html` → ausente da `main`; existe apenas na branch `copilot/stabilize-elayon-space`, então a URL publicada tende a retornar `404`
+- [x] `index.html` → presente na `main`; validar HTTP em tempo real pela página `teste-elayon-space.html`
+- [x] `acesso.html` → presente na `main`; validar HTTP em tempo real pela página `teste-elayon-space.html`
+- [x] `painel.html` → presente na `main`; validar HTTP em tempo real pela página `teste-elayon-space.html`
+- [ ] `confirmacao.html` → ausente da `main`; a tendência é `404` até o arquivo ser publicado
+- [ ] `index-check.html` → ausente da `main`; existe apenas em branch de trabalho, então a tendência é `404` até entrar na `main`
 
 ### Evidência de deploy
 - GitHub Pages está ativo na branch `main`
-- Workflow `pages build and deployment` está ativo (`workflow_id 243212649`)
-- Último run inspecionado: `34397566028`
-  - `build` → success
-  - `deploy` → success
-  - URL de ambiente publicada pelo job: `https://paulorobertoxavierjunior-create.github.io/elayonspace/`
+- O workflow `pages build and deployment` está ativo
+- Na inspeção desta task, o job de `build` e o job de `deploy` estavam concluindo com sucesso
+- A URL operacional esperada segue sendo `https://paulorobertoxavierjunior-create.github.io/elayonspace/`
 
 ### Observação do sandbox
 O sandbox desta task não conseguiu resolver DNS para `github.io`, `supabase.co` e `onrender.com`, então a checagem HTTP externa direta daqui falhou por restrição de rede do ambiente. Para contornar isso, foi criada a página `/teste-elayon-space.html`, que executa o diagnóstico real no navegador do usuário, a partir do GitHub Pages do Lab.
@@ -29,14 +27,14 @@ O sandbox desta task não conseguiu resolver DNS para `github.io`, `supabase.co`
 - Status `/health/core`: validado em tempo real pela página `teste-elayon-space.html`
 - Status `/health/lab`: validado em tempo real pela página `teste-elayon-space.html`
 - Status `/health/tokens`: validado em tempo real pela página `teste-elayon-space.html`
-- POST fake para API_BASE: executado pela página `teste-elayon-space.html` contra `/_diagnostic_probe` para evitar efeito colateral em endpoint produtivo
+- POST fake para API_BASE: opcional, executado manualmente pela página `teste-elayon-space.html` contra `/_diagnostic_probe` para evitar efeito colateral em endpoint produtivo
 
 ## Fluxo Simulado
 1. Acesso landing → página de teste faz `GET` real em `/elayonspace/` e `index.html`
 2. Carregamento Supabase JS → página de teste injeta o SDK oficial do CDN e reporta sucesso/erro
 3. Verificação sessão → página de teste cria cliente Supabase com a configuração encontrada no `acesso.html` e roda `sb.auth.getSession()` sem usuário logado
 4. Chamada API health → página de teste faz `GET` real em `/health/core`, `/health/lab` e `/health/tokens`
-5. POST fake → página de teste faz `POST` JSON para `${API_BASE}/_diagnostic_probe` para medir status e tempo de resposta sem acionar handler produtivo
+5. POST fake → página de teste faz `POST` JSON manual para `${API_BASE}/_diagnostic_probe` para medir status e tempo de resposta sem acionar handler produtivo
 
 ## Problemas Encontrados
 - `confirmacao.html` não está na branch `main` do repositório `elayonspace`

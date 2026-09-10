@@ -16,7 +16,8 @@
   const state = {
     html: {},
     statuses: {},
-    issues: []
+    issues: [],
+    renderBase: FALLBACK_RENDER_BASE
   };
 
   function setValue(id, value) {
@@ -32,13 +33,15 @@
       "url-root", "url-index", "url-acesso", "url-painel", "url-confirmacao", "url-index-check",
       "acessoSupabaseUrl", "acessoAnonKey", "acessoApiBase", "acessoFallback", "acessoSupabaseScript", "acessoHtml",
       "painelAuth", "painelFlow", "painelHealth", "painelSessionCall",
-      "supabaseCdn", "supabaseSession", "renderCore", "renderLab", "renderTokens", "renderPost",
+      "supabaseCdn", "supabaseSession", "renderCore", "renderLab", "renderTokens",
       "flowLanding", "flowSupabaseJs", "flowSession", "flowHealth"
     ].forEach((id) => setValue(id, "aguardando"));
+    setValue("renderPost", "não executado");
 
     state.html = {};
     state.statuses = {};
     state.issues = [];
+    state.renderBase = FALLBACK_RENDER_BASE;
     renderIssues();
   }
 
@@ -134,10 +137,11 @@
     const scripts = Array.from(doc.scripts);
     const inlineScript = scripts.map((script) => script.textContent || "").join("\n");
     const createClientConfig = extractCreateClientConfig(inlineScript);
-    const apiBaseMatch = inlineScript.match(/API_BASE\s*=\s*['"]([^'"]+)['"]/);
+    const apiBaseMatch = inlineScript.match(/(?:(?:const|let|var)\s+)?(?:window\.)?API_BASE\s*=\s*['"]([^'"]+)['"]/i);
     const healthMatches = inlineScript.match(/\/health\/(core|lab|tokens)/g) || [];
     const redirectsToAccess = /(?:window\.)?location(?:\.href)?\s*=\s*['"][^'"]*acesso\.html['"]/i.test(inlineScript)
-      || /location\.replace\(\s*['"][^'"]*acesso\.html['"]\s*\)/i.test(inlineScript);
+      || /(?:window\.)?location\.(?:assign|replace)\(\s*['"][^'"]*acesso\.html['"]\s*\)/i.test(inlineScript)
+      || (/auth\.getSession\s*\(/i.test(inlineScript) && /acesso\.html/i.test(inlineScript));
 
     return {
       validHtml: Boolean(doc.querySelector("html") && doc.querySelector("head") && doc.querySelector("body")),
@@ -258,7 +262,30 @@
     }
   }
 
+  async function runPostProbe() {
+    const postTarget = `${state.renderBase.replace(/\/+$/, "")}/_diagnostic_probe`;
+    const t0 = performance.now();
+    try {
+      const response = await fetchWithTimeout(postTarget, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origem: "elayon-presenca-lab", tipo: "fake-post" })
+      });
+      const elapsed = Math.round(performance.now() - t0);
+      const body = await response.text();
+      setValue("renderPost", `HTTP ${response.status} • ${elapsed}ms`);
+      log(`POST fake ${postTarget} → HTTP ${response.status} em ${elapsed}ms`);
+      if (!response.ok) addIssue(`POST fake para API_BASE respondeu HTTP ${response.status}: ${body.slice(0, 120)}`);
+    } catch (error) {
+      const message = `POST fake API_BASE falhou: ${error.message}`;
+      setValue("renderPost", message);
+      addIssue(message);
+      log(message, "err");
+    }
+  }
+
   async function checkRender(renderBase) {
+    state.renderBase = renderBase;
     const checks = [
       { id: "renderCore", path: "/health/core" },
       { id: "renderLab", path: "/health/lab" },
@@ -290,26 +317,6 @@
     }
 
     setValue("flowHealth", anyOk ? "health acessível" : "health indisponível");
-
-    const postTarget = `${renderBase.replace(/\/+$/, "")}/_diagnostic_probe`;
-    const t0 = performance.now();
-    try {
-      const response = await fetchWithTimeout(postTarget, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origem: "elayon-presenca-lab", tipo: "fake-post" })
-      });
-      const elapsed = Math.round(performance.now() - t0);
-      const body = await response.text();
-      setValue("renderPost", `HTTP ${response.status} • ${elapsed}ms`);
-      log(`POST fake ${postTarget} → HTTP ${response.status} em ${elapsed}ms`);
-      if (!response.ok) addIssue(`POST fake para API_BASE respondeu HTTP ${response.status}: ${body.slice(0, 120)}`);
-    } catch (error) {
-      const message = `POST fake API_BASE falhou: ${error.message}`;
-      setValue("renderPost", message);
-      addIssue(message);
-      log(message, "err");
-    }
   }
 
   async function run() {
@@ -370,6 +377,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     renderIssues();
     document.getElementById("btnRun")?.addEventListener("click", run);
+    document.getElementById("btnPostProbe")?.addEventListener("click", runPostProbe);
     document.getElementById("btnClear")?.addEventListener("click", LAB.clearLog);
   });
 })();

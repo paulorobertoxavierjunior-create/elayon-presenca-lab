@@ -13,6 +13,7 @@
       <p>Diagnóstico operacional do GitHub Pages, Supabase e Render do Elayon Space.</p>
       <div class="row">
         <button class="btn" id="btnRun">Executar diagnóstico</button>
+        <button class="btn secondary" id="btnPostProbe">Executar POST fake</button>
         <button class="btn secondary" id="btnClear">Limpar log</button>
         <a class="btn secondary" href="index.html">Voltar</a>
         <a class="btn secondary" href="DIAGNOSTICO.md">Abrir diagnóstico</a>
@@ -67,6 +68,7 @@
 
     <section class="card">
       <h2>Supabase e Render</h2>
+      <p>O POST fake é opcional e só roda quando você clicar em <strong>Executar POST fake</strong>.</p>
       <div class="grid">
         <div class="field"><span class="label">Supabase script CDN</span><div class="value" id="supabaseCdn">aguardando</div></div>
         <div class="field"><span class="label">sb.auth.getSession()</span><div class="value" id="supabaseSession">aguardando</div></div>
