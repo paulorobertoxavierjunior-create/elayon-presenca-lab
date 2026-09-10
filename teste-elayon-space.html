@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste — Elayon Space</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>Teste — Elayon Space</h1>
+      <p>Diagnóstico operacional do GitHub Pages, Supabase e Render do Elayon Space.</p>
+      <div class="row">
+        <button class="btn" id="btnRun">Executar diagnóstico</button>
+        <button class="btn secondary" id="btnClear">Limpar log</button>
+        <a class="btn secondary" href="index.html">Voltar</a>
+        <a class="btn secondary" href="DIAGNOSTICO.md">Abrir diagnóstico</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Inspeção do repositório Elayon Space</h2>
+      <div class="grid">
+        <div class="field"><span class="label">Branch GitHub Pages</span><div class="value" id="repoPagesBranch">main</div></div>
+        <div class="field"><span class="label">Último deploy Pages</span><div class="value" id="repoPagesDeploy">2026-09-09 19:52:20Z</div></div>
+        <div class="field"><span class="label">Arquivos presentes em main</span><div class="value" id="repoFilesMain">index.html, acesso.html, painel.html</div></div>
+        <div class="field"><span class="label">Arquivos ausentes em main</span><div class="value" id="repoFilesMissing">confirmacao.html, index-check.html</div></div>
+        <div class="field"><span class="label">Arquivo só em branch Copilot</span><div class="value" id="repoBranchOnly">index-check.html em copilot/stabilize-elayon-space</div></div>
+        <div class="field"><span class="label">Último commit relevante</span><div class="value" id="repoLastCommit">painel.html criado em 2026-03-31 03:45:29Z</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>GitHub Pages — status HTTP real</h2>
+      <div class="grid">
+        <div class="field"><span class="label">/</span><div class="value" id="url-root">aguardando</div></div>
+        <div class="field"><span class="label">index.html</span><div class="value" id="url-index">aguardando</div></div>
+        <div class="field"><span class="label">acesso.html</span><div class="value" id="url-acesso">aguardando</div></div>
+        <div class="field"><span class="label">painel.html</span><div class="value" id="url-painel">aguardando</div></div>
+        <div class="field"><span class="label">confirmacao.html</span><div class="value" id="url-confirmacao">aguardando</div></div>
+        <div class="field"><span class="label">index-check.html</span><div class="value" id="url-index-check">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Validação do acesso.html</h2>
+      <div class="grid">
+        <div class="field"><span class="label">Supabase URL</span><div class="value" id="acessoSupabaseUrl">aguardando</div></div>
+        <div class="field"><span class="label">Anon key</span><div class="value" id="acessoAnonKey">aguardando</div></div>
+        <div class="field"><span class="label">API_BASE</span><div class="value" id="acessoApiBase">aguardando</div></div>
+        <div class="field"><span class="label">Fallback TOKEN-GRATIS-TESTE</span><div class="value" id="acessoFallback">aguardando</div></div>
+        <div class="field"><span class="label">Supabase JS</span><div class="value" id="acessoSupabaseScript">aguardando</div></div>
+        <div class="field"><span class="label">Estrutura HTML</span><div class="value" id="acessoHtml">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Validação do painel.html</h2>
+      <div class="grid">
+        <div class="field"><span class="label">Autenticação obrigatória</span><div class="value" id="painelAuth">aguardando</div></div>
+        <div class="field"><span class="label">FLOW definido</span><div class="value" id="painelFlow">aguardando</div></div>
+        <div class="field"><span class="label">Health endpoints</span><div class="value" id="painelHealth">aguardando</div></div>
+        <div class="field"><span class="label">Sessão Supabase</span><div class="value" id="painelSessionCall">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Supabase e Render</h2>
+      <div class="grid">
+        <div class="field"><span class="label">Supabase script CDN</span><div class="value" id="supabaseCdn">aguardando</div></div>
+        <div class="field"><span class="label">sb.auth.getSession()</span><div class="value" id="supabaseSession">aguardando</div></div>
+        <div class="field"><span class="label">/health/core</span><div class="value" id="renderCore">aguardando</div></div>
+        <div class="field"><span class="label">/health/lab</span><div class="value" id="renderLab">aguardando</div></div>
+        <div class="field"><span class="label">/health/tokens</span><div class="value" id="renderTokens">aguardando</div></div>
+        <div class="field"><span class="label">POST fake API_BASE</span><div class="value" id="renderPost">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Fluxo simulado</h2>
+      <div class="grid">
+        <div class="field"><span class="label">1. Landing</span><div class="value" id="flowLanding">aguardando</div></div>
+        <div class="field"><span class="label">2. Supabase JS</span><div class="value" id="flowSupabaseJs">aguardando</div></div>
+        <div class="field"><span class="label">3. Sessão</span><div class="value" id="flowSession">aguardando</div></div>
+        <div class="field"><span class="label">4. API health</span><div class="value" id="flowHealth">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Problemas detectados</h2>
+      <div class="list" id="issuesList">
+        <div class="field"><span class="label">Status</span><div class="value">aguardando</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Log técnico</h2>
+      <div class="log" id="logBox"></div>
+    </section>
+  </main>
+
+  <script src="js/base.js"></script>
+  <script src="js/teste-elayon-space.js"></script>
+</body>
+</html>
