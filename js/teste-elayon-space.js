@@ -136,15 +136,17 @@
     const createClientConfig = extractCreateClientConfig(inlineScript);
     const apiBaseMatch = inlineScript.match(/API_BASE\s*=\s*['"]([^'"]+)['"]/);
     const healthMatches = inlineScript.match(/\/health\/(core|lab|tokens)/g) || [];
+    const redirectsToAccess = /(?:window\.)?location(?:\.href)?\s*=\s*['"][^'"]*acesso\.html['"]/i.test(inlineScript)
+      || /location\.replace\(\s*['"][^'"]*acesso\.html['"]\s*\)/i.test(inlineScript);
 
     return {
       validHtml: Boolean(doc.querySelector("html") && doc.querySelector("head") && doc.querySelector("body")),
       hasSupabaseScript: scripts.some((script) => /supabase-js@2/i.test(script.src || "")),
       createClientConfig,
       hasFallbackToken: inlineScript.includes("TOKEN-GRATIS-TESTE"),
-      requiresAuthRedirect: /if\s*\(!data\.session\)/.test(inlineScript) && /window\.location\.href\s*=\s*['"]acesso\.html['"]/.test(inlineScript),
-      callsGetSession: /auth\.getSession\s*\(/.test(inlineScript),
-      flowDefined: /\bFLOW\b/.test(inlineScript),
+      requiresAuthRedirect: /auth\.getSession\s*\(/i.test(inlineScript) && redirectsToAccess,
+      callsGetSession: /auth\.getSession\s*\(/i.test(inlineScript),
+      flowDefined: /\bflow\b/.test(inlineScript),
       apiBase: apiBaseMatch ? apiBaseMatch[1] : "",
       healthEndpoints: Array.from(new Set(healthMatches))
     };
@@ -289,7 +291,7 @@
 
     setValue("flowHealth", anyOk ? "health acessível" : "health indisponível");
 
-    const postTarget = `${renderBase}/health/core`;
+    const postTarget = `${renderBase.replace(/\/+$/, "")}/_diagnostic_probe`;
     const t0 = performance.now();
     try {
       const response = await fetchWithTimeout(postTarget, {

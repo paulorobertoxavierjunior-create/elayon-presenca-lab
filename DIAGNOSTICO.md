@@ -29,14 +29,14 @@ O sandbox desta task não conseguiu resolver DNS para `github.io`, `supabase.co`
 - Status `/health/core`: validado em tempo real pela página `teste-elayon-space.html`
 - Status `/health/lab`: validado em tempo real pela página `teste-elayon-space.html`
 - Status `/health/tokens`: validado em tempo real pela página `teste-elayon-space.html`
-- POST fake para API_BASE: executado pela página `teste-elayon-space.html`
+- POST fake para API_BASE: executado pela página `teste-elayon-space.html` contra `/_diagnostic_probe` para evitar efeito colateral em endpoint produtivo
 
 ## Fluxo Simulado
 1. Acesso landing → página de teste faz `GET` real em `/elayonspace/` e `index.html`
 2. Carregamento Supabase JS → página de teste injeta o SDK oficial do CDN e reporta sucesso/erro
 3. Verificação sessão → página de teste cria cliente Supabase com a configuração encontrada no `acesso.html` e roda `sb.auth.getSession()` sem usuário logado
 4. Chamada API health → página de teste faz `GET` real em `/health/core`, `/health/lab` e `/health/tokens`
-5. POST fake → página de teste faz `POST` JSON para `${API_BASE}/health/core` para medir status e tempo de resposta
+5. POST fake → página de teste faz `POST` JSON para `${API_BASE}/_diagnostic_probe` para medir status e tempo de resposta sem acionar handler produtivo
 
 ## Problemas Encontrados
 - `confirmacao.html` não está na branch `main` do repositório `elayonspace`
