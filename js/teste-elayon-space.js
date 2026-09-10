@@ -202,6 +202,10 @@
     return new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src="${SUPABASE_CDN}"]`);
       if (existing) {
+        if (window.supabase?.createClient) {
+          resolve();
+          return;
+        }
         existing.addEventListener("load", resolve, { once: true });
         existing.addEventListener("error", () => reject(new Error("Falha ao carregar SDK Supabase")), { once: true });
         return;
@@ -336,7 +340,7 @@
     const painelStatus = state.statuses["painel.html"];
     const accessHtml = accessStatus?.ok ? state.html["acesso.html"] : "";
     const painelHtml = painelStatus?.ok ? state.html["painel.html"] : "";
-    const painelReport = painelHtml ? analyzeHtml(painelHtml) : { apiBase: "", healthEndpoints: [] };
+    const painelReport = painelHtml ? analyzeHtml(painelHtml) : null;
 
     if (accessHtml) {
       const accessReport = analyzeHtml(accessHtml);
@@ -351,7 +355,7 @@
       }
 
       await checkSupabaseSession(accessReport);
-      await checkRender(getRenderBase(accessReport, painelReport));
+      await checkRender(getRenderBase(accessReport, painelReport || { apiBase: "" }));
     } else {
       setValue("acessoSupabaseUrl", "arquivo indisponível");
       setValue("acessoAnonKey", "arquivo indisponível");
@@ -359,7 +363,7 @@
       setValue("acessoFallback", "arquivo indisponível");
       setValue("acessoSupabaseScript", "arquivo indisponível");
       setValue("acessoHtml", "arquivo indisponível");
-      if (painelHtml) {
+      if (painelHtml && painelReport) {
         reportPainelChecks(painelReport);
       } else {
         setValue("painelAuth", "arquivo indisponível");
@@ -368,7 +372,7 @@
         setValue("painelSessionCall", "arquivo indisponível");
       }
       addIssue("Sem acesso ao HTML real de acesso.html; análises de Supabase e API_BASE não puderam ser completadas.");
-      await checkRender(getRenderBase({ apiBase: "" }, painelReport));
+      await checkRender(getRenderBase({ apiBase: "" }, painelReport || { apiBase: "" }));
     }
 
     log("Diagnóstico finalizado");
